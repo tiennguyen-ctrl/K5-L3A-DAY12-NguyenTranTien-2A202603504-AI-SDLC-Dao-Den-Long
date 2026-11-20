@@ -91,7 +91,7 @@ Như các phase trước: "cache read" là ngữ cảnh bị đọc lại mỗi 
 
 **Harness:** AGENTS.md cập nhật cho Ticket-03 (luật thay thế, proof/bot chỉ ghi phase3/, bằng chứng phase cũ đóng băng). Skill verify-phase giữ nguyên.
 
-**Đánh giá Phase 3:** lõi headless v1.2 đạt theo bằng chứng (131/132 test, 106/106 kịch bản CLI, 21.600 tick/Đêm chạy 0,39–0,56 s, tất định, 22 phép đột biến có ý nghĩa đều bị bắt). Sau khi nộp, chủ repo báo đã bật các tính năng mới và xem bằng mắt, ổn (lời khai, không ảnh/video). Chưa kiểm chứng: cân bằng độ khó; bot chỉ thắng Đêm 1 1/6 ván, chưa thắng Đêm 2. Giả định có thể lệch test ẩn: deposited của đèn sáng, refuel.amount, wander đi tới đèn mục tiêu. Chi tiết: [phase3-acceptance.md](../proof/phase3-acceptance.md).
+**Đánh giá Phase 3:** lõi headless v1.2 đạt theo bằng chứng (132/132 test, 106/106 kịch bản CLI, 21.600 tick/Đêm chạy 0,39–0,56 s, tất định, 22 phép đột biến có ý nghĩa đều bị bắt). Sau khi nộp, chủ repo báo đã bật các tính năng mới và xem bằng mắt, ổn (lời khai, không ảnh/video). Chưa kiểm chứng: cân bằng độ khó; bot chỉ thắng Đêm 1 1/6 ván, chưa thắng Đêm 2. Giả định có thể lệch test ẩn: deposited của đèn sáng, refuel.amount, wander đi tới đèn mục tiêu. Chi tiết: [phase3-acceptance.md](../proof/phase3-acceptance.md).
 
 ## Phase 4 (Ticket-04 "Bình minh: phát hành v1.0.0", Contract v1.3)
 **Công cụ:** Claude Code (VS Code).
