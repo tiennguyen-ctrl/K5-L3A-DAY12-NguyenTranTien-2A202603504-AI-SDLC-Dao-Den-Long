@@ -22,11 +22,11 @@ Bằng chứng sinh bằng lệnh thật ở commit được gắn tag `phase-1`
 | 16a | Giao diện 3D + HUD (ngọn lửa, đom đóm mang, đèn sáng, giờ, điểm, tỏa sáng) | người chơi chơi thật trên trình duyệt, chụp màn hình | phase1/screenshots/lantern-lit.png (đèn đã sáng), gameplay.png | ĐẠT |
 | 16b | Màn thua | ảnh chụp ván chơi thật (hết ngọn lửa, 50 điểm) | phase1/screenshots/lose-screen.png | ĐẠT |
 | 16c | Màn thắng | ảnh dàn dựng bằng scenario (cả 5 đèn `lit`, mở `#win`); điểm 449 = 299 + 150 khớp công thức | phase1/screenshots/win-screen-staged.png | ĐẠT (dàn dựng, không phải ván chơi thật; ván thắng thật chỉ được chứng minh bằng bot, mục 15) |
-| 16d | Chơi lại bằng Enter / nút | chưa có bằng chứng ghi lại | | CHƯA XÁC NHẬN |
+| 16d | Chơi lại bằng Enter sau khi thua | người chơi bấm Enter ở màn thua, chụp màn hình: ván mới bắt đầu (4:59, 3 ngọn lửa, 0/5 đèn, 0 điểm) | phase1/screenshots/restart-after-lose.png | ĐẠT (chơi lại sau khi thua; chưa thử sau khi thắng thật) |
 | 17 | Mây đội nón lá treo đèn lồng nhỏ | ảnh gameplay | phase1/screenshots/gameplay.png | ĐẠT (xem ảnh) |
 
 ## Phần chưa kiểm chứng đầy đủ (trung thực)
-- Chủ repo đã chơi thử bản web bằng tay (ảnh `lantern-lit.png`, `lose-screen.png` là ảnh chụp ván thật). Chưa có ghi chép cụ thể cho: hướng camera khi xoay, chơi lại bằng Enter (mục 16d).
+- Chủ repo đã chơi thử bản web bằng tay (ảnh `lantern-lit.png`, `lose-screen.png` là ảnh chụp ván thật). Chơi lại bằng Enter sau khi thua đã được xác nhận (mục 16d). Chưa có ghi chép cụ thể cho hướng camera khi xoay.
 - **Chưa có ván thắng thật bằng tay.** Màn thắng chỉ có ảnh dàn dựng bằng scenario; ván thắng đầy đủ mới được chứng minh bằng bot (mục 15).
 - Hai ảnh `gameplay.png`, `win-screen-staged.png` và `menu.png` chụp bằng Chrome headless (render phần mềm), không phải ván chơi tay.
 - Camera có thể bị cây che: đã xử lý bằng cách tự ẩn cây gần camera/chắn giữa camera và Mây (`src/web/forest.ts`), nhưng bụi lớn sát camera vẫn che một phần màn hình.
