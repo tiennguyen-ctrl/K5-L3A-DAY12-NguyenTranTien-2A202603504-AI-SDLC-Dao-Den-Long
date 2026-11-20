@@ -61,4 +61,4 @@ Như Phase 1: "cache read" là ngữ cảnh bị đọc lại mỗi lượt, kh�
 
 **Harness:** `AGENTS.md` cập nhật cho phạm vi mới (kiến trúc maps/world/flow, quy tắc test không dùng `WORLD.*`); thêm skill `.claude/skills/verify-phase/SKILL.md` (typecheck, test, proof, tất định, hiệu năng, báo "CHƯA KIỂM CHỨNG" thay vì "đạt").
 
-**Đánh giá Phase 2:** lõi headless v1.1 đạt theo bằng chứng (89/89 test, 67/67 kịch bản CLI, 21.600 tick chạy 0,45–0,6 s, tất định). Chưa kiểm chứng: âm thanh, FPS ≥ 30 trên GPU thật, hình ảnh tầng/dốc/tháp Đêm 3, ván chơi tay Đêm 2–3; bot chưa thắng Đêm 2. Chi tiết: [phase2-acceptance.md](../proof/phase2-acceptance.md).
+**Đánh giá Phase 2:** lõi headless v1.1 đạt theo bằng chứng (89/89 test, 67/67 kịch bản CLI, 21.600 tick chạy 0,45–0,6 s, tất định). Lúc nộp tag chưa kiểm chứng: âm thanh, hình ảnh tầng/dốc/tháp Đêm 3, ván chơi tay Đêm 2–3. Sau đó chủ repo tự kiểm và báo: âm thanh ổn, đã xem hình ảnh Đêm 3, đã chơi tay Đêm 2 và 3 (lời khai, không có ghi âm/ảnh/video). FPS đã đo bằng F3 (82–103). Bot vẫn chỉ thắng Đêm 1, chưa thắng Đêm 2. Chi tiết: [phase2-acceptance.md](../proof/phase2-acceptance.md).

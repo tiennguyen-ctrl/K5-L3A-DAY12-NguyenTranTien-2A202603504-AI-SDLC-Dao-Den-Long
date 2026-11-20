@@ -41,7 +41,7 @@ Kết quả chạy lúc viết: 89/89 test đạt; 67/67 kịch bản qua CLI đ
 | Chuỗi 3 Đêm: menu → giới thiệu → chơi → kết quả → Đêm kế; thắng Đêm 3 ra Bình Minh với tổng điểm; thua chơi lại đúng Đêm | `tests/web.test.ts` (logic `src/web/flow.ts`); ảnh `phase2/screenshots/intro-night2.png`, `dawn-staged.png` | ĐẠT logic; ảnh Bình Minh là cảnh dàn dựng |
 | Tạm dừng: logic dừng hoàn toàn, snapshot `paused`, sự kiện paused/resumed | `pause_resume`, `pause_freezes_cooldowns`; ảnh `pause-menu.png` (Tiếp tục / Chơi lại Đêm / Cài đặt / Về menu) | ĐẠT |
 | Cài đặt (âm lượng, độ nhạy chuột) lưu giữa các lần mở | `tests/web.test.ts` (lưu/đọc lại, giá trị hỏng, storage bị chặn) | ĐẠT logic; chưa thử lưu thật trong trình duyệt |
-| Âm thanh: nhạc nền + hiệu ứng nhặt/thắp/tỏa sáng/bị đánh/nhảy/lướt/thắng/thua/bóng xuất hiện/đếm ngược 10 s | cài đặt trong `src/web/audio.ts` (Web Audio, không dùng file âm thanh) | **CHƯA KIỂM CHỨNG** (xem dưới) |
+| Âm thanh: nhạc nền + hiệu ứng nhặt/thắp/tỏa sáng/bị đánh/nhảy/lướt/thắng/thua/bóng xuất hiện/đếm ngược 10 s | cài đặt trong `src/web/audio.ts` (Web Audio, không dùng file âm thanh) | Chủ repo nghe thử, báo ổn (không có ghi âm; xem dưới) |
 | HUD đầy đủ (Ngọn Lửa, đồng hồ đỏ nhấp nháy ≤ 30 s, đèn k/n, điểm, thanh 10 ô, hồi chiêu Lướt/Tỏa Sáng, nhắc nạp đèn, mũi tên chỉ đèn) | ảnh `night2-hud.png`, `night3-hud.png` | ĐẠT một phần: ảnh có đủ trừ nhắc nạp đèn, đồng hồ đỏ nhấp nháy, Bùa Gió, gió |
 | Bảng màu chuẩn; ánh sáng môi trường = 0,15 + 0,55 × (đèn sáng/tổng) | test mã hex (`tests/web.test.ts`); công thức cài đặt trong `World.update` | ĐẠT mã hex; công thức chưa có test |
 
@@ -60,7 +60,7 @@ Kết quả chạy lúc viết: 89/89 test đạt; 67/67 kịch bản qua CLI đ
 ## Định nghĩa hoàn thành (DoD)
 | Mục | Kết quả |
 |---|---|
-| Bằng chứng game chạy đúng yêu cầu | các bảng trên; **chưa có ván chơi tay Phase 2 được ghi lại** |
+| Bằng chứng game chạy đúng yêu cầu | các bảng trên; chủ repo đã tự chơi tay Đêm 2 và Đêm 3 (lời khai của chủ repo, chưa có video hay ảnh ván chơi đính kèm) |
 | Hồi quy Phase 1 với số chuẩn | 18 kịch bản `phase: 1` trong `tests/cases.ts` chạy lại; chỗ luật đổi đã sửa kèm lý do (mục 5 của spec) |
 | Spec có acceptance criteria cho từng mục Phần 3 | [../notes/phase2-spec.md](../notes/phase2-spec.md) mục 3 |
 | AGENTS.md và skill được cập nhật cho phạm vi mới | `AGENTS.md` (cập nhật Phase 2), skill `.claude/skills/verify-phase/SKILL.md`; lịch sử git sẽ thể hiện sau commit |
@@ -69,9 +69,12 @@ Kết quả chạy lúc viết: 89/89 test đạt; 67/67 kịch bản qua CLI đ
 
 ## Chưa kiểm chứng / hạn chế (trung thực)
 - **FPS đã đo ở cả 3 Đêm: Đêm 1 ~99–100, Đêm 2 97–103, Đêm 3 82.** Chủ repo đọc bằng F3 (đồng hồ trong game); số 99–100 có thể là trần của tần số quét màn hình (~100 Hz). Máy: Intel Core i5-12450H, NVIDIA GeForce RTX 3050 Laptop GPU và Intel UHD Graphics (không rõ trình duyệt dùng GPU nào), Windows 11, Chrome. Cửa sổ đo ~1917×857 ở Đêm 1 và ~1580×870 ở Đêm 3 (lớn hơn 1280×720 nên điều kiện khắt khe hơn). Ảnh Đêm 3 chụp ngay lúc xuất phát, chưa phải lúc nhiều bóng, Gió Lạc và gió cùng hoạt động ở khu vực nhiều tầng; số đo đó là lúc nhẹ nhất của Đêm 3, chưa phải trường hợp xấu nhất. Chrome headless trên máy tôi dùng giả lập GPU bằng phần mềm nên không dùng để đo.
-- **Âm thanh chưa nghe thử**: không có cách kiểm trong môi trường headless. Cần chơi thử để xác nhận nghe được và không chói tai.
-- **Hình ảnh Đêm 3 chưa thấy đủ**: ảnh Đêm 3 chỉ chụp lúc xuất phát; tầng, dốc, tháp chuông, bục nhảy chỉ được kiểm bằng logic headless, chưa được nhìn thấy bằng mắt.
-- **Chưa có ván chơi tay** Đêm 2 và Đêm 3 (cầu, Gió Lạc, bùa, gió, bục nhảy). Mũi tên chỉ đèn, nhắc nạp đèn, đồng hồ đỏ nhấp nháy, Bùa Gió, lá bay báo gió: đã cài đặt nhưng chưa xác nhận bằng ảnh.
+- **Cập nhật sau khi nộp tag `phase-2` (do chủ repo tự kiểm bằng tay, tôi/AI không chứng kiến; chỉ là lời khai, không có ghi âm, ảnh hay video kèm theo):**
+  - Âm thanh: chủ repo đã nghe thử và thấy ổn.
+  - Hình ảnh Đêm 3: chủ repo đã nhìn thấy các tầng, dốc, tháp chuông bằng mắt, báo ổn.
+  - Chủ repo đã tự chơi tay Đêm 2 và Đêm 3. Chưa ghi lại kết quả chi tiết (thắng/thua, lỗi gặp phải) nên mục này chỉ xác nhận "đã chơi", không phải bằng chứng thắng được. Ảnh hay video ván chơi sẽ bổ sung ở Phase 4 nếu có.
+  - Các ảnh trong `phase2/screenshots/` vẫn là ảnh cũ (Đêm 3 chỉ chụp lúc xuất phát).
+- Trước đó trong tài liệu này ghi các mục trên là "chưa kiểm chứng"; nội dung cũ được giữ trong lịch sử git của tag `phase-2`.
 - **Bot không chứng minh được Đêm 2 và 3 thắng được.** Bot tham lam biết né: Đêm 1 thắng 2/6 ván (seed 2, 4), Đêm 2 thắng 0/6, chưa có bot Đêm 3 (xem [phase2/bot/RESULTS.md](phase2/bot/RESULTS.md); mọi ván phát lại qua CLI khớp). Bot không dùng Bùa Gió, không tránh Gió Lạc nên thua Đêm 2 không có nghĩa là Đêm 2 không thắng được. Thắng Đêm 2/3 chỉ được chứng minh ở bước cuối (kịch bản `win_night2_last_lantern`, `win_night3_tier2_lantern`).
 - **Một số giả định có thể lệch với test ẩn** (xem spec mục 2): điểm xuất phát Đêm 3, `night_start` ở tick 0, `invuln` là số tick, thời gian `spawning` 30 tick, `wander` chuyển động 2 m/s.
 - Kiểm tra tất định mới chạy trên một máy (Windows, Node 24); chưa thử macOS/Linux.
