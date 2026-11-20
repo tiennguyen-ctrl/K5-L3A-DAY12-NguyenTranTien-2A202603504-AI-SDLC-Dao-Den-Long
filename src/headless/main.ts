@@ -4,7 +4,7 @@ import { runHeadless } from "../core/runner.ts";
 import { FormatError, parseInputs, parseScenario } from "../core/validate.ts";
 
 const USAGE =
-  "usage: --seed <int> --night 1 [--scenario f.json] [--inputs f.json] --ticks <int> --out f.jsonl [--snapshot-every <int>]";
+  "usage: --seed <int> --night <1|2|3> [--scenario f.json] [--inputs f.json] --ticks <int> --out f.jsonl [--snapshot-every <int>]";
 
 class UsageError extends Error {}
 
@@ -53,7 +53,7 @@ function main(): void {
   const every = intArg(a, "snapshot-every", false, 10);
   const out = a.get("out");
   if (!out) throw new UsageError("thiếu --out");
-  if (night !== 1) throw new UsageError(`chỉ hỗ trợ --night 1 (nhận ${night})`);
+  if (night < 1 || night > 3) throw new UsageError(`--night phải là 1, 2 hoặc 3 (nhận ${night})`);
   if (ticks < 0) throw new UsageError("--ticks phải >= 0");
   if (every < 1) throw new UsageError("--snapshot-every phải >= 1");
 
@@ -62,7 +62,7 @@ function main(): void {
   const scenario = sp ? parseScenario(readText(sp, "scenario")) : undefined;
   const inputs = ip ? parseInputs(readText(ip, "inputs")) : undefined;
 
-  const lines = runHeadless({ seed, ticks, snapshotEvery: every, scenario, inputs });
+  const lines = runHeadless({ seed, night, ticks, snapshotEvery: every, scenario, inputs });
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, lines.join("\n") + "\n");
 }

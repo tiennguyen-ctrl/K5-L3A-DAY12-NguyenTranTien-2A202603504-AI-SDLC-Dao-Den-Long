@@ -4,7 +4,7 @@
 Đảo Đèn Lồng, Mây, Bóng Mực, Đèn Lồng Lớn là nhân vật và bối cảnh gốc do bài lab (AI SDLC Day 12) cung cấp.
 
 ## Hình ảnh, mô hình, âm thanh
-Không dùng asset ngoài. Mây, Bóng Mực, Đèn Lồng, đảo, mây, sao đều được dựng bằng hình khối cơ bản của Three.js trong mã nguồn (`src/web/`). Không có file ảnh, mô hình 3D hay âm thanh nào. Giao diện dùng font hệ thống.
+Không dùng asset ngoài. Mây, Bóng Mực, Đèn Lồng, đảo, mây, sao đều được dựng bằng hình khối cơ bản của Three.js trong mã nguồn (`src/web/`). Không có file ảnh, mô hình 3D hay âm thanh nào. Nhạc nền và hiệu ứng âm thanh được **tổng hợp trực tiếp bằng Web Audio API** trong mã (`src/web/audio.ts`). Giao diện dùng font hệ thống.
 
 ## Thư viện và công cụ
 | Tên | Giấy phép | Dùng cho |

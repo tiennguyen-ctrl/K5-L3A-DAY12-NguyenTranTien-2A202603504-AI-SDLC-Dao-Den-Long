@@ -5,31 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Đảo Đèn Lồng</title>
   <style>
-    html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0a1a; font-family: system-ui, "Segoe UI", sans-serif; color: #fff1d6; }
+    :root { --sky: #0E1430; --mist: #1B2350; --gold: #F2C14E; --lit: #FFB347; --core: #FFE9B0; --danger: #FF5A5F; --text: #F5F1E6; --off: #5B5F6E; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: var(--sky); font-family: system-ui, "Segoe UI", sans-serif; color: var(--text); }
     canvas { display: block; }
-    #hud { position: fixed; top: 12px; left: 12px; right: 12px; display: flex; gap: 10px; flex-wrap: wrap; pointer-events: none; }
-    .chip { background: rgba(20, 14, 40, .72); border: 1px solid rgba(255, 179, 71, .45); border-radius: 12px; padding: 6px 12px; font-size: 15px; backdrop-filter: blur(4px); }
-    .chip b { color: #ffb347; }
-    .bad { color: #b79cff; }
-    #hint { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: rgba(20, 14, 40, .8); border: 1px solid #ffb347; border-radius: 12px; padding: 8px 16px; display: none; }
-    #toast { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); text-align: center; pointer-events: none; }
-    #toast div { background: rgba(20, 14, 40, .75); border-radius: 10px; padding: 6px 14px; margin-top: 6px; animation: fade 2.4s forwards; }
-    @keyframes fade { 0% { opacity: 0; transform: translateY(-6px) } 10% { opacity: 1; transform: none } 80% { opacity: 1 } 100% { opacity: 0 } }
-    #flash { position: fixed; inset: 0; background: radial-gradient(transparent 40%, rgba(90, 40, 170, .7)); opacity: 0; pointer-events: none; transition: opacity .5s; }
-    #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(8, 6, 20, .72); }
-    #card { max-width: 520px; text-align: center; padding: 28px 34px; background: rgba(30, 20, 55, .92); border: 1px solid #ffb347; border-radius: 18px; box-shadow: 0 0 60px rgba(255, 179, 71, .25); }
-    #card h1 { margin: 0 0 6px; color: #ffb347; font-size: 34px; }
-    #card p { margin: 8px 0; line-height: 1.5; }
-    #card small { color: #c9b9a0; }
-    button { margin-top: 14px; font: inherit; font-weight: 700; color: #2a1608; background: #ffb347; border: 0; border-radius: 12px; padding: 10px 24px; cursor: pointer; }
+    .chip { background: rgba(14, 20, 48, .78); border: 1px solid rgba(242, 193, 78, .5); border-radius: 12px; padding: 6px 12px; font-size: 15px; backdrop-filter: blur(4px); }
+    .chip b { color: var(--gold); }
+    #hud > * { position: fixed; pointer-events: none; }
+    #flames { top: 12px; left: 12px; font-size: 20px; letter-spacing: 2px; }
+    #clock { top: 12px; left: 50%; transform: translateX(-50%); font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    #clock.low { color: var(--danger); border-color: var(--danger); animation: blink .6s steps(2) infinite; }
+    @keyframes blink { 50% { opacity: .35; } }
+    #hud > #pausebtn { pointer-events: auto; top: 60px; left: 12px; cursor: pointer; margin: 0; padding: 6px 12px; font-size: 14px; font-weight: 600; color: var(--text); background: rgba(14, 20, 48, .78); border: 1px solid rgba(242, 193, 78, .5); border-radius: 12px; }
+    #hud > #pausebtn:hover { border-color: var(--lit); }
+    #topright { top: 12px; right: 12px; display: flex; gap: 8px; }
+    #motebar { bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; padding: 6px 10px; }
+    #motebar i { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255, 246, 194, .4); background: transparent; }
+    #motebar i.on { background: #FFF6C2; box-shadow: 0 0 8px #FFE58A; border-color: #FFE58A; }
+    #cooldowns { bottom: 16px; right: 12px; display: flex; gap: 8px; }
+    .cd { min-width: 96px; text-align: center; }
+    .cd small { display: block; color: var(--text); opacity: .75; }
+    .cd.ready { border-color: var(--lit); }
+    .cd.wait { opacity: .7; border-color: var(--off); }
+    #charm { bottom: 70px; right: 12px; border-color: #C8102E; }
+    #hint { bottom: 70px; left: 50%; transform: translateX(-50%); display: none; border-color: var(--lit); }
+    #wind { top: 56px; left: 50%; transform: translateX(-50%); display: none; border-color: #8FA3B8; }
+    #arrow { top: 0; left: 0; width: 0; height: 0; display: none; border-left: 14px solid transparent; border-right: 14px solid transparent; border-bottom: 34px solid var(--lit); filter: drop-shadow(0 0 6px var(--lit)); }
+    #toast { position: fixed; top: 64px; right: 14px; text-align: right; pointer-events: none; }
+    #toast div { background: rgba(14, 20, 48, .78); border-radius: 10px; padding: 6px 14px; margin-top: 6px; animation: fade 2.4s forwards; }
+    @keyframes fade { 0% { opacity: 0; transform: translateX(8px) } 10% { opacity: 1; transform: none } 80% { opacity: 1 } 100% { opacity: 0 } }
+    #flash { position: fixed; inset: 0; background: radial-gradient(transparent 40%, rgba(255, 90, 95, .55)); opacity: 0; pointer-events: none; transition: opacity .5s; }
+    #fps { position: fixed; bottom: 4px; left: 6px; font: 11px monospace; opacity: .6; display: none; }
+    #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(14, 20, 48, .82); }
+    #card { width: min(560px, 92vw); text-align: center; padding: 26px 32px; background: rgba(27, 35, 80, .94); border: 1px solid var(--gold); border-radius: 18px; box-shadow: 0 0 60px rgba(255, 179, 71, .22); }
+    #card h1 { margin: 0 0 6px; color: var(--lit); font-size: 34px; }
+    #card h2 { margin: 0 0 8px; color: var(--gold); }
+    #card p { margin: 8px 0; line-height: 1.55; }
+    #card small { opacity: .75; }
+    .say { text-align: left; border-left: 3px solid var(--gold); padding-left: 12px; font-style: italic; }
+    .who { color: var(--gold); font-style: normal; font-weight: 700; }
+    button { margin: 6px 4px 0; font: inherit; font-weight: 700; color: #2a1608; background: var(--lit); border: 0; border-radius: 12px; padding: 10px 22px; cursor: pointer; }
+    button.alt { background: transparent; color: var(--text); border: 1px solid var(--gold); }
     kbd { background: rgba(255, 255, 255, .12); border-radius: 5px; padding: 1px 6px; }
+    label { display: block; margin: 14px 0 2px; text-align: left; }
+    input[type=range] { width: 100%; accent-color: var(--lit); }
+    .bad { color: var(--danger); }
   </style>
 </head>
 <body>
-  <div id="hud"></div>
+  <div id="hud">
+    <div id="flames" class="chip"></div>
+    <div id="clock" class="chip"></div>
+    <button id="pausebtn" type="button" tabindex="-1" title="Tạm dừng (Esc hoặc P)">⏸ Tạm dừng</button>
+    <div id="topright"></div>
+    <div id="motebar" class="chip"></div>
+    <div id="cooldowns"></div>
+    <div id="charm" class="chip" style="display:none"></div>
+    <div id="hint" class="chip"></div>
+    <div id="wind" class="chip"></div>
+    <div id="arrow"></div>
+  </div>
   <div id="toast"></div>
-  <div id="hint"></div>
   <div id="flash"></div>
+  <div id="fps"></div>
   <div id="overlay"><div id="card"></div></div>
   <script type="module" src="./main.ts"></script>
 </body>

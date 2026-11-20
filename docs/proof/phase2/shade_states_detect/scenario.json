@@ -1,0 +1,38 @@
+{
+  "random_motes": false,
+  "random_shades": false,
+  "random_drifters": false,
+  "wind_enabled": false,
+  "motes": [],
+  "shades": [
+    {
+      "id": "S1",
+      "pos": [
+        20,
+        0,
+        0
+      ],
+      "state": "wander"
+    },
+    {
+      "id": "S2",
+      "pos": [
+        10,
+        0,
+        0
+      ],
+      "state": "wander"
+    },
+    {
+      "id": "S3",
+      "pos": [
+        25,
+        0,
+        0
+      ],
+      "state": "chase"
+    }
+  ],
+  "drifters": [],
+  "charms": []
+}

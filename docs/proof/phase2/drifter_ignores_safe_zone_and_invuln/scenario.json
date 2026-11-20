@@ -1,0 +1,34 @@
+{
+  "random_motes": false,
+  "random_shades": false,
+  "random_drifters": false,
+  "wind_enabled": false,
+  "motes": [],
+  "shades": [],
+  "drifters": [
+    {
+      "id": "D1",
+      "pos": [
+        4,
+        0,
+        20
+      ]
+    }
+  ],
+  "charms": [],
+  "player": {
+    "pos": [
+      0,
+      0,
+      20
+    ],
+    "carried": 6,
+    "invuln_ticks": 500
+  },
+  "lanterns": [
+    {
+      "id": "L1",
+      "lit": true
+    }
+  ]
+}
