@@ -1,9 +1,10 @@
 # AGENTS.md: Đảo Đèn Lồng (Day 12 AI SDLC)
 
-Game 3D (Three.js), 3 Đêm, lõi logic tách riêng và chạy được headless. Yêu cầu: PRD-0 (Phase 1), Ticket-02 (Phase 2), Ticket-03 (Phase 3, Contract v1.2) trên lab board. Đọc `docs/notes/phase3-spec.md` (giả định + tiêu chí) và `docs/adr/ADR-001-*` trước khi đổi luật. Luật Phase 3 THAY THẾ một số luật Phase 2 (xem `CHANGELOG.md`).
+Game 3D (Three.js), 3 Đêm, lõi logic tách riêng và chạy được headless. Yêu cầu: PRD-0 (Phase 1), Ticket-02 (Phase 2), Ticket-03 (Phase 3), Ticket-04 (Phase 4, Contract v1.3) trên lab board. Đọc `docs/notes/phase3-spec.md` (giả định + tiêu chí) và `docs/adr/ADR-001-*` trước khi đổi luật. Luật Phase 3 THAY THẾ một số luật Phase 2 (xem `CHANGELOG.md`).
 
 ## Lệnh
-- Cài: `npm install` · Chơi: `npm run dev` (nhấn F3 để xem FPS) · Build web: `npm run build`
+- Cài: `npm install` · Chơi: `npm run dev` (= `node scripts/run.ts`, nhấn F3 để xem FPS; `-- --export-leaderboard out.json` xuất bảng xếp hạng) · Build web: `npm run build` · Bản build: `npm run serve`
+- Benchmark: `node scripts/bench.ts --seed 42 --duration 30 --out bench.json` (mở Chrome/Edge thật) · Soak: `node scripts/soak.ts --seed 7 --nights 10 --out soak.json`
 - Test: `npm test` · Typecheck: `npm run typecheck`
 - Bằng chứng: `npm run proof` (kịch bản headless -> `docs/proof/phase3/`), `node scripts/bot.ts` (bot chơi Đêm 1-2)
 - Headless: `node src/headless/main.ts --seed 1 --night <1|2|3> --ticks 600 --out out.jsonl [--scenario f] [--inputs f] [--snapshot-every 10]`
@@ -18,6 +19,7 @@ Game 3D (Three.js), 3 Đêm, lõi logic tách riêng và chạy được headles
 - Node >= 22.18 chạy thẳng `.ts`: chỉ dùng cú pháp "erasable" (không enum, không parameter property `constructor(private x)`), import có đuôi `.ts`, dùng `import type`.
 
 ## Quy tắc
+- Phase 4 không đổi luật/đầu ra headless: cảnh benchmark dùng cờ `Game.bench` (mặc định false) trong `stepGame`; đừng để nó rò vào đường chạy thường. Logic bảng xếp hạng/đổi phím/số đo bench là mã thuần trong `src/web/` (có test ở `tests/phase4.test.ts`), phần Node dùng lại chúng qua `scripts/server-lib.ts`.
 - Không phá Test Contract: tên sự kiện, định dạng JSONL, mã thoát (lỗi file = 2), tính tất định theo seed.
 - Mọi thứ thêm vào (sáng tạo, rừng, nhân vật) phải chỉ ở `src/web/` hoặc tắt khi headless; `npm test` + `npm run proof` phải giữ nguyên đầu ra headless.
 - Đổi luật => thêm/sửa kịch bản trong `tests/cases.ts` TRƯỚC, rồi `npm test` và `npm run proof`. Test cũ bị luật mới làm sai thì sửa kèm lý do ghi ở `docs/notes/phaseN-spec.md`, không tắt âm thầm.

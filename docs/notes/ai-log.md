@@ -91,4 +91,34 @@ Như các phase trước: "cache read" là ngữ cảnh bị đọc lại mỗi 
 
 **Harness:** AGENTS.md cập nhật cho Ticket-03 (luật thay thế, proof/bot chỉ ghi phase3/, bằng chứng phase cũ đóng băng). Skill verify-phase giữ nguyên.
 
-**Đánh giá Phase 3:** lõi headless v1.2 đạt theo bằng chứng (131/132 test, 106/106 kịch bản CLI, 21.600 tick/Đêm chạy 0,39–0,56 s, tất định, 22 phép đột biến có ý nghĩa đều bị bắt). Chưa kiểm chứng: giao diện mới và chế độ mù màu bằng mắt thường, chơi tay Phase 3, cân bằng; bot chỉ thắng Đêm 1 1/6 ván, chưa thắng Đêm 2. Giả định có thể lệch test ẩn: deposited của đèn sáng, refuel.amount, wander đi tới đèn mục tiêu. Chi tiết: [phase3-acceptance.md](../proof/phase3-acceptance.md).
+**Đánh giá Phase 3:** lõi headless v1.2 đạt theo bằng chứng (131/132 test, 106/106 kịch bản CLI, 21.600 tick/Đêm chạy 0,39–0,56 s, tất định, 22 phép đột biến có ý nghĩa đều bị bắt). Sau khi nộp, chủ repo báo đã bật các tính năng mới và xem bằng mắt, ổn (lời khai, không ảnh/video). Chưa kiểm chứng: cân bằng độ khó; bot chỉ thắng Đêm 1 1/6 ván, chưa thắng Đêm 2. Giả định có thể lệch test ẩn: deposited của đèn sáng, refuel.amount, wander đi tới đèn mục tiêu. Chi tiết: [phase3-acceptance.md](../proof/phase3-acceptance.md).
+
+## Phase 4 (Ticket-04 "Bình minh: phát hành v1.0.0", Contract v1.3)
+**Công cụ:** Claude Code (VS Code).
+
+**Token Phase 4** (cộng từ file lịch sử phiên, trừ Phase 1–3 đã ghi ở trên; ~85 lượt trả lời của AI, tính đến ngay trước khi commit Phase 4):
+| Loại | Số token |
+|---|---|
+| Output (AI viết ra) | ~149.000 |
+| Input mới | ~190 |
+| Ghi bộ nhớ đệm (cache write) | ~682.000 |
+| Đọc lại bộ nhớ đệm (cache read) | ~37,4 triệu |
+
+Tổng dự án (4 phase) và cách tiết kiệm token: xem [retro.md](retro.md) mục 6.
+
+**Quy trình đã làm**
+1. Đọc PDF Ticket-04, lập bảng thêm gì + giả định + tiêu chí nghiệm thu (docs/notes/phase4-spec.md).
+2. Phần thuần trước (leaderboard.ts, keybinds.ts, bench.ts) kèm test, rồi phần Node (soak, bench launcher, máy chủ bảng xếp hạng), rồi giao diện.
+3. Chạy thật soak và bench trên máy chủ repo; chẩn đoán p1_low bằng cách đo thời gian CPU từng phần của khung hình và thử từng cờ trình duyệt.
+4. Chụp ảnh giao diện (menu, cài đặt, bảng xếp hạng, màn thua có ô nhập tên, HUD ở 18 px) để kiểm bằng mắt.
+
+**Chỗ AI sai / suýt sai, và cách phát hiện**
+- **Lần chạy benchmark đầu có p1_low chỉ ~11 fps** dù avg_fps ~130: nghi do 200 Bóng Mực, nên đo thêm thời gian mô phỏng/cập nhật/render từng khung và thử bench với 0 Bóng Mực: vẫn giật, tức không phải do Bóng Mực. Thử từng cờ trình duyệt: `--disable-frame-rate-limit` làm nhịp khung hình giật; chỉ dùng `--disable-gpu-vsync` thì p1_low ~60. Một giả thuyết (do số lượng thực thể) bị bác bỏ bằng đo đạc.
+- **Soak lần đầu vượt 1,2 × mem_start** (66,6 → 80 MB). Chạy 3/10/30/100/300 Đêm thấy RSS gần như phẳng (73–80 MB, lên 98 MB ở 300 Đêm), nên đây là chi phí JIT/vùng nhớ khởi động chứ không phải rò rỉ. Giải pháp trung thực: đo mem_start sau khi nạp và chạy ổn định 1200 tick, ghi thêm mem_baseline_mb (RSS thô), ép GC trước mỗi lần đo, và ghi rõ trong spec thay vì chỉnh số.
+- Test của tôi sai 2 chỗ (điều kiện qualifies mâu thuẫn với chính quy tắc "bằng điểm thì ai đạt trước đứng trên"; `-0` ≠ `0` ở `assert.deepStrictEqual` do camera `-R·sin(0)`): sửa test/biểu thức, không đổi luật.
+- Heredoc dài trong shell lại làm lỗi như P1/P3: dùng công cụ Write cho file lớn.
+- Sơ suất nhỏ: gửi nhầm vài yêu cầu POST thử tới máy chủ dev của chủ repo đang mở ở cổng 5173 (cổng mặc định bị chiếm nên máy chủ của tôi chạy ở 5174); vì đó là Vite thuần chưa có API nên không ghi gì. Bài học: kiểm cổng thật trước khi gọi API thử.
+
+**Harness:** AGENTS.md và skill verify-phase cập nhật cho lệnh bench/soak/serve và quy tắc cờ `Game.bench`.
+
+**Đánh giá Phase 4:** xem [phase4-acceptance.md](../proof/phase4-acceptance.md). Chủ repo đã chơi thử các tính năng mới và báo "đạt" (lời khai, không ảnh/video). Chủ repo cũng báo đã kiểm bench trên máy chấm, clone sạch trên máy khác và macOS/Linux, đều ổn (lời khai, không log đính kèm). Chưa có: số bench cụ thể của máy chấm trong repo, video, link Release.

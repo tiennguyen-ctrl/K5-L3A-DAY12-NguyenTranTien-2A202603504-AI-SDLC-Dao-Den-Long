@@ -1,0 +1,23 @@
+{
+  "contract_version": "1.3",
+  "frames": 3319,
+  "avg_fps": 110.6,
+  "p1_low_fps": 62.3,
+  "frame_ms_p95": 12,
+  "load_ms": 2302,
+  "peak_mem_mb": null,
+  "vsync_off": true,
+  "renderer": "three.js r187 (WebGL2) trên Chrome/157.0.0.0; GPU: ANGLE (Intel, Intel(R) UHD Graphics (0x000046A3) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "os": "win32 10.0.26200 (x64), 12th Gen Intel(R) Core(TM) i5-12450H ×12 luồng, 16 GB RAM, Node v24.16.0",
+  "frame_ms_max": 20.9,
+  "slow_frames_over_30ms": 0,
+  "spikes_t_ms": [],
+  "seed": 42,
+  "duration_s": 30,
+  "canvas": "1280x720",
+  "shades": 200,
+  "motes": 100,
+  "peak_mem_note": "Bản web: RSS của trình duyệt không đọc được từ trang trong lúc đo nên peak_mem_mb = null; mem_after_run_mb là RSS tổng các tiến trình trình duyệt ngay sau khoảng đo.",
+  "mem_after_run_mb": 674,
+  "headless": false
+}

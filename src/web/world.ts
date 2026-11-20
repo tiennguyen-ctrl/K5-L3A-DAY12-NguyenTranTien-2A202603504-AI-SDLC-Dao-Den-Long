@@ -3,7 +3,7 @@ import { T, WORLD } from "../core/constants.ts";
 import type { Game } from "../core/game.ts";
 import { lightFraction } from "../core/game.ts";
 import type { NightDef } from "../core/maps.ts";
-import { buildShade } from "./character.ts";
+import { buildShade, resetShadeResources, setShadeRimColor } from "./character.ts";
 import { PALETTE, colorsFor } from "./palette.ts";
 import { buildForest } from "./forest.ts";
 import type { Forest } from "./forest.ts";
@@ -65,6 +65,7 @@ export class World {
   setColorblind(on: boolean): void { this.colorblind = on; }
 
   dispose(): void {
+    resetShadeResources();
     this.scene.remove(this.group);
     this.group.traverse((o) => {
       const m = o as THREE.Mesh;
@@ -279,6 +280,7 @@ export class World {
     }
     for (const [id, v] of this.motes) if (!seen.has(id)) { this.group.remove(v); this.motes.delete(id); }
 
+    setShadeRimColor(colorsFor(this.colorblind).shadeRim); // viền + mắt dùng chung vật liệu
     const seenS = new Set<string>();
     for (const s of g.shades) {
       seenS.add(s.id);
@@ -295,8 +297,7 @@ export class World {
       mat.color.setHex(stunned ? PALETTE.shadeStunned : PALETTE.shadeBody);
       mat.emissive.setHex(stunned ? PALETTE.shadeStunned : rimColor);
       mat.emissiveIntensity = stunned ? 0.3 : s.state === "recoil" ? 1.3 : draining ? 0.9 + Math.sin(clock * 10) * 0.3 : 0.55;
-      (rim.material as THREE.MeshBasicMaterial).color.setHex(rimColor);
-      for (const e of v.children) if (e.name === "eye") ((e as THREE.Mesh).material as THREE.MeshBasicMaterial).color.setHex(rimColor);
+      void rim;
       const grow = s.state === "spawning" ? 1 - s.ticksLeft / WORLD.shade_spawning_ticks : 1;
       v.scale.setScalar(Math.max(0.05, grow) * (stunned ? 0.8 + Math.sin(clock * 18) * 0.04 : 1));
     }

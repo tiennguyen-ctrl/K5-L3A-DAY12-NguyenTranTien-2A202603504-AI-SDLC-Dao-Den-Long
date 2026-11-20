@@ -45,6 +45,8 @@ export interface Game {
   shades: Shade[];
   drifters: Drifter[];
   charms: Charm[];
+  /** Cảnh benchmark (Ticket-04): tắt sinh thực thể, sát thương, nhặt, hao dầu và kết thúc Đêm. Mặc định false: không ảnh hưởng headless. */
+  bench: boolean;
   randomMotes: boolean;
   randomShades: boolean;
   randomDrifters: boolean;
@@ -171,6 +173,7 @@ export function createGame(seed: number, sc: Scenario = {}, nightNo = 1): Game {
     shades: [],
     drifters: [],
     charms: [],
+    bench: false,
     randomMotes: sc.random_motes ?? true,
     randomShades: sc.random_shades ?? true,
     randomDrifters: sc.random_drifters ?? true,
@@ -388,10 +391,10 @@ export function stepGame(g: Game, inp: InputState): GameEvent[] {
     }
   }
   // nhiên liệu (bước 2): hao + bị hút, rồi đèn hết dầu tắt ngay
-  for (const l of g.lanterns) if (l.lit) l.fuelU -= DECAY_U;
+  if (!g.bench) for (const l of g.lanterns) if (l.lit) l.fuelU -= DECAY_U;
   const drains: { shade: string; lantern: Lantern }[] = [];
   for (const s of [...g.shades].sort(byId)) {
-    if (s.state !== "drain") continue;
+    if (s.state !== "drain" || g.bench) continue;
     const l = g.lanterns.find((x) => x.id === s.target);
     if (!l || !l.lit) continue;
     l.fuelU -= DRAIN_U;
@@ -477,7 +480,7 @@ export function stepGame(g: Game, inp: InputState): GameEvent[] {
   }
 
   // 4. nhặt đom đóm và bùa
-  if (p.fallWait === 0) {
+  if (p.fallWait === 0 && !g.bench) {
     for (const m of [...g.motes]) {
       if (p.carried >= capacityOf(p)) break;
       if (touches(p, m.pos)) {
@@ -581,7 +584,7 @@ export function stepGame(g: Game, inp: InputState): GameEvent[] {
       }
       if (s.state === "wander" || s.state === "chase") {
       const d = dist2d(s.pos, p.pos);
-      if (s.state === "wander" && d <= WORLD.shade_detect) s.state = "chase";
+      if (s.state === "wander" && d <= WORLD.shade_detect && !g.bench) s.state = "chase";
       else if (s.state === "chase" && d > WORLD.shade_abandon) s.state = "wander";
       if (s.state === "chase") {
         const [ux, uz] = unit2(p.pos[0] - ox, p.pos[2] - oz);
@@ -651,7 +654,7 @@ export function stepGame(g: Game, inp: InputState): GameEvent[] {
   g.drifters = g.drifters.filter((d) => d.state !== "removed");
 
   // 9. chạm: Gió Lạc cướp trước, rồi Bóng Mực gây hit (id tăng dần)
-  if (p.fallWait === 0) {
+  if (p.fallWait === 0 && !g.bench) {
     for (const d of [...g.drifters].sort(byId)) {
       if (d.state !== "chase" || d.stole) continue;
       if (dist2d(d.pos, p.pos) <= WORLD.drifter_steal_radius && p.carried > 0) {
@@ -728,7 +731,8 @@ export function stepGame(g: Game, inp: InputState): GameEvent[] {
   const left = timeLeft(g);
   let result: "won" | "lost" | null = null;
   let reason = "";
-  if (p.flames <= 0) { result = "lost"; reason = "no_flames"; }
+  if (g.bench) { /* benchmark: không kết thúc Đêm */ }
+  else if (p.flames <= 0) { result = "lost"; reason = "no_flames"; }
   else if (left <= 1e-9) {
     const lit = g.lanterns.filter((l) => l.lit);
     if (lit.length >= winNeed(g.lanterns.length)) {

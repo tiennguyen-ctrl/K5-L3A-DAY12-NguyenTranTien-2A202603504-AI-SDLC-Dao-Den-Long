@@ -1,9 +1,11 @@
 {
-  "contract_version": "1.2",
+  "contract_version": "1.3",
   "team": "2A202603504-NguyenTranTien",
   "build_cmd": "npm install",
   "run_cmd": "npm run dev",
   "headless_cmd": "node src/headless/main.ts",
+  "bench_cmd": "node scripts/bench.ts",
+  "soak_cmd": "node scripts/soak.ts",
   "tuning": {
     "player_speed": 6,
     "carry_capacity": 10,

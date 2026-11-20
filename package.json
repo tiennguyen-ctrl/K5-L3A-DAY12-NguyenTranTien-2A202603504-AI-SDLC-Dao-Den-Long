@@ -4,7 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite src/web",
+    "dev": "node scripts/run.ts",
+    "serve": "node scripts/serve.ts",
+    "bench": "node scripts/bench.ts",
+    "soak": "node scripts/soak.ts",
     "build": "vite build src/web --outDir ../../dist --emptyOutDir",
     "headless": "node src/headless/main.ts",
     "test": "node --test \"tests/**/*.test.ts\"",

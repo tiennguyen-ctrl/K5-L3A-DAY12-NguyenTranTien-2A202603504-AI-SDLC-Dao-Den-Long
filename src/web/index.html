@@ -6,16 +6,21 @@
   <title>Đảo Đèn Lồng</title>
   <style>
     :root { --sky: #0E1430; --mist: #1B2350; --gold: #F2C14E; --lit: #FFB347; --core: #FFE9B0; --danger: #FF5A5F; --text: #F5F1E6; --off: #5B5F6E; }
+    :root { --ui: 1; }
     html, body { margin: 0; height: 100%; overflow: hidden; background: var(--sky); font-family: system-ui, "Segoe UI", sans-serif; color: var(--text); }
+    /* Dễ tiếp cận: chữ UI tối thiểu 18 px ở 1280×720; "Chữ lớn" nhân 1,25 */
+    body { font-size: calc(18px * var(--ui)); }
+    body.lt { --ui: 1.25; }
+    small { font-size: 1em; }
     canvas { display: block; }
-    .chip { background: rgba(14, 20, 48, .78); border: 1px solid rgba(242, 193, 78, .5); border-radius: 12px; padding: 6px 12px; font-size: 15px; backdrop-filter: blur(4px); }
+    .chip { background: rgba(14, 20, 48, .78); border: 1px solid rgba(242, 193, 78, .5); border-radius: 12px; padding: 4px 12px; font-size: 1em; backdrop-filter: blur(4px); }
     .chip b { color: var(--gold); }
     #hud > * { position: fixed; pointer-events: none; }
-    #flames { top: 12px; left: 12px; font-size: 20px; letter-spacing: 2px; }
-    #clock { top: 12px; left: 50%; transform: translateX(-50%); font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    #flames { top: 12px; left: 12px; font-size: 1.1em; letter-spacing: 2px; }
+    #clock { top: 12px; left: 50%; transform: translateX(-50%); font-size: 1.35em; font-weight: 700; font-variant-numeric: tabular-nums; }
     #clock.low { color: var(--danger); border-color: var(--danger); animation: blink .6s steps(2) infinite; }
     @keyframes blink { 50% { opacity: .35; } }
-    #hud > #pausebtn { pointer-events: auto; top: 60px; left: 12px; cursor: pointer; margin: 0; padding: 6px 12px; font-size: 14px; font-weight: 600; color: var(--text); background: rgba(14, 20, 48, .78); border: 1px solid rgba(242, 193, 78, .5); border-radius: 12px; }
+    #hud > #pausebtn { pointer-events: auto; top: 64px; left: 12px; cursor: pointer; margin: 0; padding: 4px 12px; font-size: 1em; font-weight: 600; color: var(--text); background: rgba(14, 20, 48, .78); border: 1px solid rgba(242, 193, 78, .5); border-radius: 12px; }
     #hud > #pausebtn:hover { border-color: var(--lit); }
     #topright { top: 12px; right: 12px; display: flex; gap: 8px; }
     #motebar { bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; padding: 6px 10px; }
@@ -34,7 +39,21 @@
     #toast div { background: rgba(14, 20, 48, .78); border-radius: 10px; padding: 6px 14px; margin-top: 6px; animation: fade 2.4s forwards; }
     @keyframes fade { 0% { opacity: 0; transform: translateX(8px) } 10% { opacity: 1; transform: none } 80% { opacity: 1 } 100% { opacity: 0 } }
     #flash { position: fixed; inset: 0; background: radial-gradient(transparent 40%, rgba(255, 90, 95, .55)); opacity: 0; pointer-events: none; transition: opacity .5s; }
-    #fps { position: fixed; bottom: 4px; left: 6px; font: 11px monospace; opacity: .6; display: none; }
+    #fps { position: fixed; bottom: 4px; left: 6px; font: 1em monospace; opacity: .7; display: none; }
+    .cue { position: fixed; top: 0; left: 0; width: 0; height: 0; display: none; pointer-events: none; border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 28px solid #7A3CFF; filter: drop-shadow(0 0 5px #7A3CFF); }
+    body.cb .cue { border-bottom-color: #00B3FF; filter: drop-shadow(0 0 5px #00B3FF); }
+    /* Giảm chuyển động: tắt chớp màn hình, nhấp nháy và hiệu ứng trượt */
+    body.rm #flash { display: none; }
+    body.rm #clock.low { animation: none; }
+    body.rm #toast div { animation: none; opacity: 1; }
+    table.lb { width: 100%; border-collapse: collapse; margin: 8px 0; }
+    table.lb th, table.lb td { padding: 4px 8px; text-align: left; border-bottom: 1px solid rgba(242, 193, 78, .25); }
+    table.lb td.n, table.lb th.n { text-align: right; }
+    .keyrow { display: flex; justify-content: space-between; align-items: center; margin: 2px 0; text-align: left; }
+    .keyrow button { margin: 2px 0; padding: 2px 14px; min-width: 130px; }
+    .msg { min-height: 1.4em; color: var(--lit); margin: 4px 0; }
+    input[type=text] { font: inherit; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--gold); background: rgba(14, 20, 48, .9); color: var(--text); width: 12em; }
+    #card { max-height: 92vh; overflow-y: auto; }
     #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(14, 20, 48, .82); }
     #card { width: min(560px, 92vw); text-align: center; padding: 26px 32px; background: rgba(27, 35, 80, .94); border: 1px solid var(--gold); border-radius: 18px; box-shadow: 0 0 60px rgba(255, 179, 71, .22); }
     #card h1 { margin: 0 0 6px; color: var(--lit); font-size: 34px; }
@@ -53,7 +72,8 @@
     body.cb { --danger: #FFFFFF; }
     body.cb #flash { background: radial-gradient(transparent 40%, rgba(255, 255, 255, .6)); }
     body.cb #clock.low::before, body.cb .bad::before, body.cb .warn::before { content: "⚠ "; }
-    #lowfuel { top: 100px; left: 50%; transform: translateX(-50%); display: none; border-color: var(--danger); color: var(--danger); }
+    #caption { top: 56px; left: 50%; transform: translateX(-50%); display: none; border-color: var(--lit); text-align: center; max-width: 70vw; }
+    #lowfuel { top: 108px; left: 50%; transform: translateX(-50%); display: none; border-color: var(--danger); color: var(--danger); }
   </style>
 </head>
 <body>
@@ -67,6 +87,7 @@
     <div id="charm" class="chip" style="display:none"></div>
     <div id="hint" class="chip"></div>
     <div id="wind" class="chip"></div>
+    <div id="caption" class="chip" role="status" aria-live="polite"></div>
     <div id="lowfuel" class="chip warn"></div>
     <div id="arrow"></div>
   </div>

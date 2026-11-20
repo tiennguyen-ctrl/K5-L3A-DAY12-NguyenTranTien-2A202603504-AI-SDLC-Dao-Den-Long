@@ -14,18 +14,20 @@ export interface Flow {
   /** Điểm của Đêm vừa chơi xong (hiện ở màn kết quả). */
   lastScore: number;
   lastWon: boolean;
+  /** Số Đêm đã thắng trong lượt chơi này (cho bảng xếp hạng). */
+  nightsWon: number;
 }
 
-export const initialFlow = (): Flow => ({ screen: "menu", night: 1, total: 0, lastScore: 0, lastWon: false });
+export const initialFlow = (): Flow => ({ screen: "menu", night: 1, total: 0, lastScore: 0, lastWon: false, nightsWon: 0 });
 
 /** Menu chính -> giới thiệu Đêm 1, xóa tổng điểm. */
 export function newGame(): Flow {
-  return { screen: "intro", night: 1, total: 0, lastScore: 0, lastWon: false };
+  return { screen: "intro", night: 1, total: 0, lastScore: 0, lastWon: false, nightsWon: 0 };
 }
 
 /** Chọn Đêm từ menu: vào thẳng phần giới thiệu của Đêm đó, tổng điểm bắt đầu từ 0. */
 export function startAt(night: NightNo): Flow {
-  return { screen: "intro", night, total: 0, lastScore: 0, lastWon: false };
+  return { screen: "intro", night, total: 0, lastScore: 0, lastWon: false, nightsWon: 0 };
 }
 
 /** Giới thiệu Đêm -> chơi. */
@@ -38,9 +40,10 @@ export function finishNight(f: Flow, won: boolean, score: number): Flow {
   if (f.screen !== "playing") return f;
   if (won) {
     const total = f.total + score;
+    const nightsWon = f.nightsWon + 1;
     return f.night === 3
-      ? { ...f, screen: "dawn", total, lastScore: score, lastWon: true }
-      : { ...f, screen: "result", total, lastScore: score, lastWon: true };
+      ? { ...f, screen: "dawn", total, lastScore: score, lastWon: true, nightsWon }
+      : { ...f, screen: "result", total, lastScore: score, lastWon: true, nightsWon };
   }
   return { ...f, screen: "result", lastScore: score, lastWon: false };
 }

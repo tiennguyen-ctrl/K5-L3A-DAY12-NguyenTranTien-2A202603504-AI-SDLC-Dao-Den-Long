@@ -111,9 +111,11 @@ test("hiệu năng: chạy 21.600 tick mỗi Đêm xong rất nhanh (yêu cầu 
 });
 
 // 5) Hợp đồng
-test("game.contract.json v1.2: số chuẩn và đủ khóa", () => {
-  assert.equal(contract.contract_version, "1.2");
-  for (const k of ["team", "build_cmd", "run_cmd", "headless_cmd"] as const) assert.ok(contract[k]);
+test("game.contract.json v1.3: số chuẩn và đủ khóa", () => {
+  assert.equal(contract.contract_version, "1.3");
+  for (const k of ["team", "build_cmd", "run_cmd", "headless_cmd", "bench_cmd", "soak_cmd"] as const) assert.ok(contract[k], k);
+  assert.match(contract.bench_cmd, /scripts.bench.ts/);
+  assert.match(contract.soak_cmd, /scripts.soak.ts/);
   const std: Record<string, unknown> = {
     player_speed: 6, carry_capacity: 10, lantern_cost: 10, lantern_count_night1: 5, pickup_radius: 1, interact_radius: 2,
     pulse_cost: 3, pulse_radius: 5, night1_duration_s: 240, night2_duration_s: 270, night3_duration_s: 300, flames: 3,

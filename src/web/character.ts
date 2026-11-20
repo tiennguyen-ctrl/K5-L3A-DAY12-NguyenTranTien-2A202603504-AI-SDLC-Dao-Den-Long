@@ -87,23 +87,38 @@ export function buildMay(): MayRig {
   return { group: g, lantern, light, charmAura };
 }
 
+/** Hình học và vật liệu dùng chung giữa mọi Bóng Mực (hàng trăm con ở cảnh benchmark): chỉ thân có vật liệu riêng vì đổi màu theo trạng thái. */
+let shared: { blobGeo: THREE.SphereGeometry; rimGeo: THREE.SphereGeometry; eyeGeo: THREE.SphereGeometry; rimMat: THREE.MeshBasicMaterial; eyeMat: THREE.MeshBasicMaterial } | null = null;
+function sharedShade() {
+  return (shared ??= {
+    blobGeo: new THREE.SphereGeometry(0.75, 20, 16),
+    rimGeo: new THREE.SphereGeometry(0.82, 20, 16),
+    eyeGeo: new THREE.SphereGeometry(0.1, 8, 8),
+    rimMat: new THREE.MeshBasicMaterial({ color: PALETTE.shadeRim, side: THREE.BackSide, transparent: true, opacity: 0.55 }),
+    eyeMat: new THREE.MeshBasicMaterial({ color: PALETTE.shadeRim }),
+  });
+}
+/** Gọi khi World bị dọn: lần dựng sau tạo lại tài nguyên dùng chung. */
+export function resetShadeResources(): void { shared = null; }
+/** Màu viền/mắt dùng chung (đổi theo bảng màu dễ phân biệt). */
+export function setShadeRimColor(hex: number): void {
+  const r = sharedShade();
+  r.rimMat.color.setHex(hex);
+  r.eyeMat.color.setHex(hex);
+}
+
 /** Bóng Mực: thân #120A1A, viền #7A3CFF (bị choáng #3A3450), hai mắt cùng màu viền (đổi sang #00B3FF ở bảng màu dễ phân biệt). */
 export function buildShade(): THREE.Group {
+  const r = sharedShade();
   const g = new THREE.Group();
-  const blob = new THREE.Mesh(
-    new THREE.SphereGeometry(0.75, 20, 16),
-    new THREE.MeshStandardMaterial({ color: PALETTE.shadeBody, emissive: PALETTE.shadeRim, emissiveIntensity: 0.55, roughness: 0.4 }),
-  );
+  const blob = new THREE.Mesh(r.blobGeo, new THREE.MeshStandardMaterial({ color: PALETTE.shadeBody, emissive: PALETTE.shadeRim, emissiveIntensity: 0.55, roughness: 0.4 }));
   blob.name = "blob";
   blob.scale.set(1, 0.85, 1);
-  const rim = new THREE.Mesh(
-    new THREE.SphereGeometry(0.82, 20, 16),
-    new THREE.MeshBasicMaterial({ color: PALETTE.shadeRim, side: THREE.BackSide, transparent: true, opacity: 0.55 }),
-  );
+  const rim = new THREE.Mesh(r.rimGeo, r.rimMat);
   rim.name = "rim";
   rim.scale.set(1, 0.85, 1);
   for (const sx of [-0.25, 0.25]) {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), new THREE.MeshBasicMaterial({ color: PALETTE.shadeRim }));
+    const eye = new THREE.Mesh(r.eyeGeo, r.eyeMat);
     eye.name = "eye";
     eye.position.set(sx, 0.15, 0.62);
     g.add(eye);

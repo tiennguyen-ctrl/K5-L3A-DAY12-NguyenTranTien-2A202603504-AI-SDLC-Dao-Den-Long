@@ -14,7 +14,7 @@ Kết quả chạy lúc nộp: `npm test` 132/132 đạt · `npm run proof` 106/
 | Đèn đầy dầu (`used = 0`) không được chọn, không sự kiện, không điểm | cài đặt trong `stepGame` (bước 5); **chưa có kịch bản riêng** vì sau bước hao của tick, đèn sáng luôn < 100 | cài đặt, chưa test riêng (xem hạn chế) |
 | Hết dầu → tắt, `deposited = 0`, `lantern_out`, `ever_lit` giữ | `lantern_out` | ĐẠT |
 | Thắp lại 5 đom đóm; đèn chưa từng sáng 10 | `relight_cost_5`, `first_light_still_10`, `out_then_relight_chain` | ĐẠT |
-| Thanh dầu, nhấp nháy 1 Hz khi fuel < 30 | `src/web/world.ts`; ảnh [phase3/screenshots/fuel-night1.png](phase3/screenshots/fuel-night1.png) | ĐẠT một phần: ảnh chụp bằng Chrome headless cho thấy HUD và đèn, nhưng thanh dầu và nhấp nháy chưa nhìn rõ (rừng che) |
+| Thanh dầu, nhấp nháy 1 Hz khi fuel < 30 | `src/web/world.ts`; ảnh [phase3/screenshots/fuel-night1.png](phase3/screenshots/fuel-night1.png) | ĐẠT: chủ repo đã bật các tính năng và xem bằng mắt, báo ổn (lời khai, không có ảnh/video đính kèm). Ảnh headless trong repo chưa nhìn rõ thanh dầu (rừng che) |
 
 ## Mục 2: Bóng Mực hút dầu
 | Yêu cầu | Kiểm chứng | Kết quả |
@@ -47,9 +47,9 @@ Kết quả chạy lúc nộp: `npm test` 132/132 đạt · `npm run proof` 106/
 ## Mục 6: Mù màu
 | Yêu cầu | Kiểm chứng | Kết quả |
 |---|---|---|
-| Cài đặt "Bảng màu dễ phân biệt", được lưu | `tests/web.test.ts` (lưu/đọc, mặc định tắt, chỉ nhận boolean) | ĐẠT logic; **chưa nhìn thấy trong trình duyệt thật** |
-| Viền và mắt Bóng #7A3CFF → #00B3FF; cảnh báo #FF5A5F → #FFFFFF kèm ⚠ | `tests/web.test.ts` (mã hex); CSS `body.cb`; mắt Bóng dùng cùng màu viền | ĐẠT mã hex; **chưa xem bằng mắt** |
-| Đèn tắt xẹp 20% và giấy rách; đèn sắp hết dầu nhấp nháy | `src/web/world.ts` (`scale.y` 1,25 → 1,0, vạch rách, 1 Hz) | cài đặt, **chưa xem bằng mắt** |
+| Cài đặt "Bảng màu dễ phân biệt", được lưu | `tests/web.test.ts` (lưu/đọc, mặc định tắt, chỉ nhận boolean) | ĐẠT: logic + chủ repo đã bật các tính năng và xem bằng mắt, báo ổn (lời khai, không có ảnh/video đính kèm) |
+| Viền và mắt Bóng #7A3CFF → #00B3FF; cảnh báo #FF5A5F → #FFFFFF kèm ⚠ | `tests/web.test.ts` (mã hex); CSS `body.cb`; mắt Bóng dùng cùng màu viền | ĐẠT: mã hex + chủ repo đã bật các tính năng và xem bằng mắt, báo ổn (lời khai, không có ảnh/video đính kèm) |
+| Đèn tắt xẹp 20% và giấy rách; đèn sắp hết dầu nhấp nháy | `src/web/world.ts` (`scale.y` 1,25 → 1,0, vạch rách, 1 Hz) | ĐẠT: chủ repo đã bật các tính năng và xem bằng mắt, báo ổn (lời khai, không có ảnh/video đính kèm) |
 
 ## Mục 7: Test Contract v1.2
 | Yêu cầu | Kiểm chứng | Kết quả |
@@ -72,9 +72,10 @@ Kết quả chạy lúc nộp: `npm test` 132/132 đạt · `npm run proof` 106/
 Script tạm sửa `src/core` rồi chạy test (đã hoàn nguyên sau mỗi phép; không lưu trong repo). 22 phép phá có ý nghĩa: hao dầu ×2, `ceil→floor` ở châm dầu, thắp lại tốn 10, ngưỡng vùng an toàn `>=→>`, đèn yếu `<→<=`, `drain_range` 2→3, bỏ hút dầu, ngưỡng thắng `ceil→floor`, sức chứa +1, hết choáng về chase, tắt khi `<0`, bỏ tăng `successful_lights`, thắp lại +100, bỏ +15 drain, bỏ `floor(fuel)` ở bình minh, thắng sớm khi đủ đèn, `no_flames` xét sau dawn, bỏ điều kiện "chưa đầy", bỏ ưu tiên đèn yếu, drain không cần fuel < 30, drain không sang chase, `fuel_drain` mỗi 30 tick. Lần chạy đầu 2/23 sống sót (đèn yếu `<=`, `drain_range` 3) → thêm 2 kịch bản biên (`wander_weak_boundary_30`, `drain_range_is_2m`) → cả hai bị bắt. (Phép thứ 23 "pause vẫn hao" trong script là phép rỗng do tôi viết sai, bị bỏ khỏi số liệu; việc đóng băng dầu khi tạm dừng được kiểm bởi `pause_freezes_fuel` do cấu trúc code trả về trước bước 2.)
 
 ## Chưa kiểm chứng / hạn chế (trung thực)
-- **Chưa chơi tay bản web Phase 3.** Giao diện mới (thanh dầu, nhấp nháy, sợi hút dầu, HUD mang/sức chứa, cài đặt mù màu, hộp cảnh báo) chỉ được build + typecheck + 1 ảnh Chrome headless. Chưa xem nhấp nháy 1 Hz, thanh dầu, bảng màu mù màu bằng mắt, chưa nghe âm báo `lantern_out`.
+- **Chơi tay bản web Phase 3:** chủ repo đã bật các tính năng mới (thanh dầu, nhấp nháy, sợi hút dầu, HUD mang/sức chứa, cài đặt mù màu, cảnh báo) và xem bằng mắt, báo ổn. Đây là lời khai, không có ảnh/video ván chơi; không ghi lại chi tiết từng thứ đã xem. Chưa ghi nhận âm báo `lantern_out` có nghe thử hay không.
 - **Bot chưa chứng minh Đêm 2–3 thắng được** theo luật mới: bot tham lam (chỉ biết nạp/châm đèn, né, tỏa sáng) thắng Đêm 1 1/6 ván (seed 2) và Đêm 2 0/6, chưa có bot Đêm 3; mọi ván phát lại qua CLI khớp ([phase3/bot/RESULTS.md](phase3/bot/RESULTS.md)). Bot không dùng Bùa Gió và không tránh Gió Lạc, nên không nên đọc kết quả này là "game quá khó". Độ cân bằng (thời gian hao dầu, 5 fuel/s...) chưa được chơi thử.
+- **Cân bằng độ khó:** chủ repo báo đã tự thử và thắng được Đêm 2 và Đêm 3 theo luật mới (lời khai của chủ repo, không có log/ảnh/video đính kèm). Bằng chứng bot trong repo KHÔNG đổi: [phase3/bot/RESULTS.md](phase3/bot/RESULTS.md) vẫn là Đêm 1 thắng 1/6, Đêm 2 thắng 0/6, không có bot Đêm 3; nên "thắng được Đêm 2–3" ở đây dựa vào ván chơi của chủ repo, chưa có bot hay bản ghi chứng minh.
 - **Có kịch bản riêng cho "đèn đầy dầu không được chọn" hay không**: không, vì với thứ tự bước hiện tại đèn sáng luôn < 100 tại bước tương tác (đã hao ở bước 2). Nhánh `used = 0` vẫn được cài đặt (`l.fuelU >= FUEL_MAX_U → bỏ qua`).
 - **Nhánh "drain → wander nếu cách đèn > 2 m"** chưa có kịch bản riêng (chỉ bằng đọc mã).
 - **Giả định có thể lệch với test ẩn** (xem [phase3-spec.md](../notes/phase3-spec.md) mục 2): đặc biệt A2 (`deposited` của đèn sáng), A3 (`refuel.amount` là số đom đóm), A5 (`wander` đi tới đèn mục tiêu 2 m/s), A7 (thời điểm `fuel_drain`), A12 (tên khóa `tuning.score`), A8 (hết choáng về `wander`).
-- Kiểm tra tất định mới chạy trên một máy (Windows, Node 24); chưa thử macOS/Linux.
+- Kiểm tra tất định trong repo chạy trên một máy (Windows, Node 24). Chủ repo báo đã thử trên máy khác và macOS/Linux, ổn (lời khai của chủ repo, không có log/ảnh/video đính kèm).

@@ -15,13 +15,13 @@ const memory = (): KV & { data: Map<string, string> } => {
 test("cài đặt: mặc định khi chưa lưu; lưu rồi mở lại (storage mới trỏ cùng dữ liệu) vẫn giữ", () => {
   const st = memory();
   assert.deepEqual(loadSettings(st), DEFAULT_SETTINGS);
-  assert.equal(saveSettings({ volume: 0.25, sensitivity: 2.2, colorblind: true }, st), true);
+  assert.equal(saveSettings({ ...DEFAULT_SETTINGS, volume: 0.25, sensitivity: 2.2, colorblind: true }, st), true);
   assert.ok(st.data.has(SETTINGS_KEY));
-  assert.deepEqual(loadSettings(st), { volume: 0.25, sensitivity: 2.2, colorblind: true });
+  assert.deepEqual(loadSettings(st), { ...DEFAULT_SETTINGS, volume: 0.25, sensitivity: 2.2, colorblind: true });
 });
 
 test("cài đặt: giá trị hỏng/ngoài khoảng được làm sạch, không làm vỡ game", () => {
-  assert.deepEqual(sanitize({ volume: 9, sensitivity: -4 }), { volume: 1, sensitivity: 0.2, colorblind: false });
+  assert.deepEqual(sanitize({ volume: 9, sensitivity: -4 }), { ...DEFAULT_SETTINGS, volume: 1, sensitivity: 0.2 });
   assert.equal(sanitize({ colorblind: "true" }).colorblind, false, "chỉ chấp nhận boolean true");
   assert.deepEqual(sanitize({ volume: "abc" }), DEFAULT_SETTINGS);
   assert.deepEqual(sanitize(null), DEFAULT_SETTINGS);
