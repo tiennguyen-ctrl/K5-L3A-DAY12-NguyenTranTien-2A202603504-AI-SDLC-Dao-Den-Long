@@ -89,7 +89,7 @@ export function parseScenario(text: string): Scenario {
     const p = obj(root.player, "scenario.player");
     sc.player = {};
     if (p.pos !== undefined) sc.player.pos = vec3(p.pos, "scenario.player.pos");
-    for (const k of ["carried", "flames", "invuln_ticks", "dash_cd_ticks", "pulse_cd_ticks", "charm_ticks"] as const) {
+    for (const k of ["carried", "flames", "invuln_ticks", "dash_cd_ticks", "pulse_cd_ticks", "charm_ticks", "successful_lights"] as const) {
       const v = optNonNeg(p, k, "scenario.player");
       if (v !== undefined) sc.player[k] = v;
     }
@@ -130,6 +130,10 @@ export function parseScenario(text: string): Scenario {
       }
       const t = optNonNeg(o, "state_ticks_left", w);
       if (t !== undefined) sh.state_ticks_left = t;
+      if (o.target_lantern_id !== undefined) {
+        if (typeof o.target_lantern_id !== "string") throw new FormatError(`${w}.target_lantern_id: phải là chuỗi`);
+        sh.target_lantern_id = o.target_lantern_id;
+      }
       return sh;
     });
   }
@@ -182,6 +186,14 @@ export function parseScenario(text: string): Scenario {
       if (o.lit !== undefined) {
         if (typeof o.lit !== "boolean") throw new FormatError(`${w}.lit: phải là boolean`);
         out.lit = o.lit;
+      }
+      if (o.ever_lit !== undefined) {
+        if (typeof o.ever_lit !== "boolean") throw new FormatError(`${w}.ever_lit: phải là boolean`);
+        out.ever_lit = o.ever_lit;
+      }
+      if (o.fuel !== undefined) {
+        if (!isNum(o.fuel) || o.fuel < 0 || o.fuel > 100) throw new FormatError(`${w}.fuel: phải là số từ 0 đến 100`);
+        out.fuel = o.fuel;
       }
       return out;
     });

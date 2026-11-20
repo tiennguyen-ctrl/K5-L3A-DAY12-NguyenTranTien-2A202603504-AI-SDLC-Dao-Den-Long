@@ -87,7 +87,7 @@ export function buildMay(): MayRig {
   return { group: g, lantern, light, charmAura };
 }
 
-/** Bóng Mực: thân #120A1A, viền #7A3CFF (bị choáng #3A3450), hai mắt vàng nhạt. */
+/** Bóng Mực: thân #120A1A, viền #7A3CFF (bị choáng #3A3450), hai mắt cùng màu viền (đổi sang #00B3FF ở bảng màu dễ phân biệt). */
 export function buildShade(): THREE.Group {
   const g = new THREE.Group();
   const blob = new THREE.Mesh(
@@ -103,7 +103,8 @@ export function buildShade(): THREE.Group {
   rim.name = "rim";
   rim.scale.set(1, 0.85, 1);
   for (const sx of [-0.25, 0.25]) {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), new THREE.MeshBasicMaterial({ color: 0xfff0b0 }));
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), new THREE.MeshBasicMaterial({ color: PALETTE.shadeRim }));
+    eye.name = "eye";
     eye.position.set(sx, 0.15, 0.62);
     g.add(eye);
   }

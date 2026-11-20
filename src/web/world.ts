@@ -4,7 +4,7 @@ import type { Game } from "../core/game.ts";
 import { lightFraction } from "../core/game.ts";
 import type { NightDef } from "../core/maps.ts";
 import { buildShade } from "./character.ts";
-import { PALETTE } from "./palette.ts";
+import { PALETTE, colorsFor } from "./palette.ts";
 import { buildForest } from "./forest.ts";
 import type { Forest } from "./forest.ts";
 
@@ -12,7 +12,14 @@ import type { Forest } from "./forest.ts";
 const std = (color: number, extra: Partial<THREE.MeshStandardMaterialParameters> = {}) =>
   new THREE.MeshStandardMaterial({ color, roughness: 0.9, ...extra });
 
-interface LanternView { pole: THREE.Mesh; body: THREE.Mesh; core: THREE.Mesh; light: THREE.PointLight; zone: THREE.Mesh; beam: THREE.Mesh }
+interface LanternView {
+  pole: THREE.Mesh; body: THREE.Mesh; core: THREE.Mesh; light: THREE.PointLight; zone: THREE.Mesh; beam: THREE.Mesh;
+  /** thanh dầu (billboard): nền + phần đầy */
+  bar: THREE.Group; fill: THREE.Mesh;
+  /** vết rách trên giấy (chỉ hiện khi đèn tắt, để phân biệt không cần màu) */
+  tear: THREE.Group;
+}
+const LOW_FUEL_U = T.low_fuel_threshold * 60;
 
 /** Dựng và đồng bộ toàn bộ thế giới 3D của một Đêm. Chỉ hiển thị: không thay đổi trạng thái game. */
 export class World {
@@ -33,6 +40,8 @@ export class World {
 
   private scene: THREE.Scene;
   private night: NightDef;
+  private colorblind = false;
+  private tethers = new Map<string, THREE.Line>();
 
   constructor(scene: THREE.Scene, night: NightDef, g: Game) {
     this.scene = scene;
@@ -51,6 +60,9 @@ export class World {
     this.leaves.visible = false;
     this.group.add(this.leaves);
   }
+
+  /** Bảng màu dễ phân biệt: viền/mắt Bóng Mực #00B3FF. */
+  setColorblind(on: boolean): void { this.colorblind = on; }
 
   dispose(): void {
     this.scene.remove(this.group);
@@ -161,8 +173,26 @@ export class World {
     zone.position.set(x, y + 0.04, z);
     const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.7, 18, 12, 1, true), new THREE.MeshBasicMaterial({ color: PALETTE.lanternLit, transparent: true, opacity: 0.14, side: THREE.DoubleSide, depthWrite: false, fog: false }));
     beam.position.set(x, y + 12, z);
-    this.group.add(pole, body, core, light, zone, beam);
-    return { pole, body, core, light, zone, beam };
+    const bar = new THREE.Group();
+    const back = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.26), new THREE.MeshBasicMaterial({ color: 0x120a1a, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false }));
+    const fill = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.16), new THREE.MeshBasicMaterial({ color: PALETTE.lanternLit, side: THREE.DoubleSide, depthWrite: false }));
+    fill.position.z = 0.01;
+    bar.add(back, fill);
+    bar.position.set(x, y + 5.1, z);
+    bar.visible = false;
+    // vết rách: vài vạch đen chéo trên thân đèn (đèn tắt)
+    const tear = new THREE.Group();
+    const tearMat = new THREE.MeshBasicMaterial({ color: 0x0b0b12 });
+    for (let i = 0; i < 3; i++) {
+      const cut = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.55, 0.02), tearMat);
+      cut.position.set(-0.3 + i * 0.3, 0.1 - (i % 2) * 0.2, 0.7);
+      cut.rotation.z = 0.5 - i * 0.45;
+      tear.add(cut);
+    }
+    tear.position.set(x, y + 3.35, z);
+    tear.visible = false;
+    this.group.add(pole, body, core, light, zone, beam, bar, tear);
+    return { pole, body, core, light, zone, beam, bar, fill, tear };
   }
 
   private makeMote(): THREE.Group {
@@ -208,16 +238,34 @@ export class World {
     this.ambient.intensity = 0.15 + 0.55 * k; // theo ticket
     (this.scene.background as THREE.Color).setHex(PALETTE.sky);
 
+    const blink = Math.sin(clock * Math.PI * 2) > 0; // 1 Hz
     g.lanterns.forEach((l, i) => {
       const v = this.lanterns[i];
-      const frac = Math.min(1, l.deposited / T.lantern_cost);
+      const need = l.everLit ? T.relight_cost : T.lantern_cost;
+      const frac = Math.min(1, l.deposited / need);
+      const fuel = l.fuelU / (T.fuel_max * 60);
+      const low = l.lit && l.fuelU < LOW_FUEL_U;
+      const shown = !low || blink; // đèn sắp hết dầu nhấp nháy chậm
       const mat = v.body.material as THREE.MeshStandardMaterial;
       mat.color.setHex(l.lit ? PALETTE.lanternLit : PALETTE.lanternOff);
-      mat.emissiveIntensity = l.lit ? 1.5 + Math.sin(clock * 3 + i) * 0.15 : frac * 0.6;
-      (v.core.material as THREE.MeshBasicMaterial).opacity = l.lit ? 0.95 : frac * 0.5;
-      v.light.intensity = l.lit ? 110 : frac * 18;
-      (v.zone.material as THREE.MeshBasicMaterial).opacity = l.lit ? 0.4 : 0;
-      (v.beam.material as THREE.MeshBasicMaterial).opacity = l.lit ? 0.4 : 0.1 + frac * 0.1;
+      mat.emissiveIntensity = l.lit ? (shown ? 1.5 + Math.sin(clock * 3 + i) * 0.15 : 0.2) : frac * 0.6;
+      (v.core.material as THREE.MeshBasicMaterial).opacity = l.lit ? (shown ? 0.95 : 0.2) : frac * 0.5;
+      v.light.intensity = l.lit ? (shown ? 40 + 70 * fuel : 8) : frac * 18;
+      (v.zone.material as THREE.MeshBasicMaterial).opacity = l.lit && !low ? 0.4 : 0; // mất vùng an toàn khi fuel < 30
+      (v.beam.material as THREE.MeshBasicMaterial).opacity = l.lit ? (shown ? 0.4 : 0.08) : 0.1 + frac * 0.1;
+      // đèn tắt: xẹp 20% và giấy rách (phân biệt không cần màu)
+      v.body.scale.y = l.lit ? 1.25 : 1.0;
+      v.body.position.y = l.pos[1] + (l.lit ? 3.5 : 3.31);
+      v.core.position.y = v.body.position.y;
+      v.tear.visible = !l.lit;
+      // thanh dầu trên đèn đang sáng
+      v.bar.visible = l.lit && shown;
+      if (l.lit) {
+        v.fill.scale.x = Math.max(0.001, fuel);
+        v.fill.position.x = -0.75 * (1 - fuel);
+        (v.fill.material as THREE.MeshBasicMaterial).color.setHex(low ? 0xffffff : PALETTE.lanternLit);
+        v.bar.lookAt(camPos.x, v.bar.position.y, camPos.z);
+      }
     });
 
     const seen = new Set<string>();
@@ -242,14 +290,36 @@ export class World {
       const rim = v.getObjectByName("rim") as THREE.Mesh;
       const mat = blob.material as THREE.MeshStandardMaterial;
       const stunned = s.state === "stunned";
+      const draining = s.state === "drain";
+      const rimColor = colorsFor(this.colorblind).shadeRim;
       mat.color.setHex(stunned ? PALETTE.shadeStunned : PALETTE.shadeBody);
-      mat.emissive.setHex(stunned ? PALETTE.shadeStunned : PALETTE.shadeRim);
-      mat.emissiveIntensity = stunned ? 0.3 : s.state === "recoil" ? 1.3 : 0.55;
-      (rim.material as THREE.MeshBasicMaterial).color.setHex(PALETTE.shadeRim);
+      mat.emissive.setHex(stunned ? PALETTE.shadeStunned : rimColor);
+      mat.emissiveIntensity = stunned ? 0.3 : s.state === "recoil" ? 1.3 : draining ? 0.9 + Math.sin(clock * 10) * 0.3 : 0.55;
+      (rim.material as THREE.MeshBasicMaterial).color.setHex(rimColor);
+      for (const e of v.children) if (e.name === "eye") ((e as THREE.Mesh).material as THREE.MeshBasicMaterial).color.setHex(rimColor);
       const grow = s.state === "spawning" ? 1 - s.ticksLeft / WORLD.shade_spawning_ticks : 1;
       v.scale.setScalar(Math.max(0.05, grow) * (stunned ? 0.8 + Math.sin(clock * 18) * 0.04 : 1));
     }
     for (const [id, v] of this.shades) if (!seenS.has(id)) { this.group.remove(v); this.shades.delete(id); }
+    // sợi hút dầu từ Bóng Mực đang drain tới đèn mục tiêu
+    for (const s of g.shades) {
+      const target = s.state === "drain" ? g.lanterns.find((l) => l.id === s.target) : undefined;
+      let line = this.tethers.get(s.id);
+      if (!target) { if (line) line.visible = false; continue; }
+      if (!line) {
+        line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), new THREE.LineBasicMaterial({ color: PALETTE.lanternLit }));
+        line.frustumCulled = false;
+        this.group.add(line);
+        this.tethers.set(s.id, line);
+      }
+      line.visible = true;
+      (line.material as THREE.LineBasicMaterial).color.setHex(colorsFor(this.colorblind).shadeRim);
+      const pos = line.geometry.attributes.position as THREE.BufferAttribute;
+      pos.setXYZ(0, s.pos[0], s.pos[1] + 0.5, s.pos[2]);
+      pos.setXYZ(1, target.pos[0], target.pos[1] + 3.4, target.pos[2]);
+      pos.needsUpdate = true;
+    }
+    for (const [id, line] of this.tethers) if (!g.shades.some((x) => x.id === id)) { this.group.remove(line); this.tethers.delete(id); }
 
     const seenD = new Set<string>();
     for (const d of g.drifters) {

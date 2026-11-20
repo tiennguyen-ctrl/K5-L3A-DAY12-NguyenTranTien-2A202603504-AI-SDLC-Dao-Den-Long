@@ -1,0 +1,12 @@
+{
+  "frames": [
+    {
+      "tick": 0,
+      "dash": true
+    },
+    {
+      "tick": 1,
+      "dash": false
+    }
+  ]
+}

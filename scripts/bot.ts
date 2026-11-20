@@ -1,12 +1,12 @@
 // Bot tham lam chơi hết một Đêm bằng lõi game, ghi lại inputs rồi phát lại qua CLI headless.
-// Mục đích: chứng minh game THẮNG ĐƯỢC từ đầu đến cuối và CLI cho đúng kết quả đó.
+// Mục đích: chứng minh game THẮNG ĐƯỢC từ đầu đến cuối (Phase 3: giữ đủ đèn sáng tới bình minh) và CLI cho đúng kết quả đó.
 // Hỗ trợ Đêm 1 và Đêm 2 (đi qua cầu tre). Chưa có bot cho Đêm 3 (3 tầng/dốc/bục nhảy).
 // Chạy: node scripts/bot.ts [night] [seed...]   (mặc định night 1 và 2, seed 1..6)
 import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { T } from "../src/core/constants.ts";
-import { createGame, idleInput, stepGame, timeLeft } from "../src/core/game.ts";
+import { capacityOf, createGame, idleInput, stepGame, timeLeft } from "../src/core/game.ts";
 import type { Game } from "../src/core/game.ts";
 
 const root = join(import.meta.dirname, "..");
@@ -27,13 +27,14 @@ function decide(g: Game, tick: number) {
   const p = g.player;
   let target: number[] | undefined;
   let interact = false, pulse = false, dash = false;
-  const unlit = g.lanterns.filter((l) => !l.lit);
-  const nearestUnlit = [...unlit].sort((a, b) => d2(p.pos, a.pos) - d2(p.pos, b.pos))[0];
+  // đèn cần chăm: chưa sáng (ưu tiên) hoặc sáng nhưng dầu dưới 45
+  const needy = g.lanterns.filter((l) => !l.lit || l.fuelU < 45 * 60);
+  const nearestUnlit = [...needy].sort((a, b) => (a.lit ? 1 : 0) - (b.lit ? 1 : 0) || d2(p.pos, a.pos) - d2(p.pos, b.pos))[0];
   const active = g.shades.filter((s) => s.state === "chase" || s.state === "wander");
   const close = active.filter((s) => d2(p.pos, s.pos) < 3.4).sort((a, b) => d2(p.pos, a.pos) - d2(p.pos, b.pos))[0];
   if (close && p.carried >= T.pulse_cost && p.pulseCd === 0) pulse = tick % 2 === 0;
-  const full = p.carried >= T.carry_capacity;
-  const needed = nearestUnlit ? T.lantern_cost - nearestUnlit.deposited : 0;
+  const full = p.carried >= capacityOf(p);
+  const needed = nearestUnlit ? (nearestUnlit.lit ? 4 : (nearestUnlit.everLit ? T.relight_cost : T.lantern_cost) - nearestUnlit.deposited) : 0;
   if (nearestUnlit && (full || (p.carried >= needed && needed > 0) || g.motes.length === 0)) {
     target = nearestUnlit.pos;
     if (d2(p.pos, nearestUnlit.pos) <= T.interact_radius - 0.4 && p.carried > 0) interact = tick % 2 === 0;
@@ -83,7 +84,7 @@ for (const night of nights) {
       inp.move = [mk[0], mk[1]]; inp.interact = a.interact; inp.pulse = a.pulse; inp.dash = a.dash;
       stepGame(g, inp);
     }
-    const dir = join(root, "docs", "proof", "phase2", "bot", `night${night}-seed${seed}`);
+    const dir = join(root, "docs", "proof", "phase3", "bot", `night${night}-seed${seed}`);
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, "inputs.json"), JSON.stringify({ frames }));
     const r = spawnSync(process.execPath, ["src/headless/main.ts", "--seed", String(seed), "--night", String(night), "--ticks", String(budget), "--inputs", join(dir, "inputs.json"), "--snapshot-every", "1200", "--out", join(dir, "output.jsonl")], { cwd: root });
@@ -93,6 +94,6 @@ for (const night of nights) {
   }
 }
 const out = lines.join("\n");
-mkdirSync(join(root, "docs", "proof", "phase2", "bot"), { recursive: true });
-writeFileSync(join(root, "docs", "proof", "phase2", "bot", "RESULTS.md"), `# Bot tham lam chơi Đêm 1 và 2\n\nSinh bởi \`node scripts/bot.ts\`. Bot chơi bằng lõi, ghi inputs, rồi phát lại qua CLI headless. Chưa có bot cho Đêm 3.\n\n${out}\n`);
+mkdirSync(join(root, "docs", "proof", "phase3", "bot"), { recursive: true });
+writeFileSync(join(root, "docs", "proof", "phase3", "bot", "RESULTS.md"), `# Bot tham lam chơi Đêm 1 và 2 (luật Phase 3: giữ đèn sáng tới bình minh)\n\nSinh bởi \`node scripts/bot.ts\`. Bot chơi bằng lõi, ghi inputs, rồi phát lại qua CLI headless. Chưa có bot cho Đêm 3.\n\n${out}\n`);
 console.log(out);

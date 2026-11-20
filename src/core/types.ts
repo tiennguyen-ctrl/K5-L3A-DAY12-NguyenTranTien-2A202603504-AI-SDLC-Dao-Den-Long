@@ -22,7 +22,7 @@ export interface InputState {
   pause: boolean;
 }
 
-export const SHADE_STATES = ["spawning", "wander", "chase", "recoil", "stunned"] as const;
+export const SHADE_STATES = ["spawning", "wander", "chase", "recoil", "stunned", "drain"] as const;
 export type ShadeState = (typeof SHADE_STATES)[number];
 export const DRIFTER_STATES = ["idle", "chase", "flee", "removed"] as const;
 export type DrifterState = (typeof DRIFTER_STATES)[number];
@@ -36,16 +36,17 @@ export interface Scenario {
     dash_cd_ticks?: number;
     pulse_cd_ticks?: number;
     charm_ticks?: number;
+    successful_lights?: number;
   };
   random_motes?: boolean;
   random_shades?: boolean;
   random_drifters?: boolean;
   wind_enabled?: boolean;
   motes?: { pos: Vec3; kind?: "random" | "dropped"; ttl_ticks?: number }[];
-  shades?: { id?: string; pos: Vec3; state?: ShadeState; state_ticks_left?: number }[];
+  shades?: { id?: string; pos: Vec3; state?: ShadeState; state_ticks_left?: number; target_lantern_id?: string }[];
   drifters?: { id?: string; pos: Vec3; state?: DrifterState; stolen?: number; state_ticks_left?: number }[];
   charms?: { id?: string; pos?: Vec3; available?: boolean; respawn_ticks?: number }[];
-  lanterns?: { id: string; pos?: Vec3; deposited?: number; lit?: boolean }[];
+  lanterns?: { id: string; pos?: Vec3; deposited?: number; lit?: boolean; fuel?: number; ever_lit?: boolean }[];
   time_left_s?: number;
 }
 

@@ -1,0 +1,54 @@
+{
+  "random_motes": false,
+  "random_shades": false,
+  "random_drifters": false,
+  "wind_enabled": false,
+  "motes": [],
+  "shades": [
+    {
+      "id": "S1",
+      "pos": [
+        4,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "S2",
+      "pos": [
+        30,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "S3",
+      "pos": [
+        0,
+        0,
+        5.2
+      ]
+    },
+    {
+      "id": "S4",
+      "pos": [
+        0,
+        0,
+        4.9
+      ]
+    },
+    {
+      "id": "S5",
+      "pos": [
+        0,
+        0,
+        4.99
+      ]
+    }
+  ],
+  "drifters": [],
+  "charms": [],
+  "player": {
+    "carried": 5
+  }
+}

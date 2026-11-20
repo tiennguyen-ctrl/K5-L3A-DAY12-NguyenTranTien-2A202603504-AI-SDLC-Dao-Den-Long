@@ -68,9 +68,9 @@ test("bản đồ chuẩn: số đèn, vị trí, xuất phát, đom đóm ban �
     assert.deepEqual(s.wind, { active: false, dir_deg: 0 });
   }
   assert.deepEqual([s1.night, s2.night, s3.night], [1, 2, 3]);
-  assert.equal(s1.time_left_s, 300);
-  assert.equal(s2.time_left_s, 330);
-  assert.equal(s3.time_left_s, 360);
+  assert.equal(s1.time_left_s, 240);
+  assert.equal(s2.time_left_s, 270);
+  assert.equal(s3.time_left_s, 300);
   assert.deepEqual(s1.charms.map((c: any) => c.id), []);
   assert.deepEqual(s2.charms.map((c: any) => [c.id, c.pos]), [["C1", [35, 0, 0]]]);
   assert.deepEqual(s3.charms.map((c: any) => [c.id, c.pos]), [["C1", [30, 0, 25]], ["C2", [-30, 0, 25]]]);
@@ -79,13 +79,14 @@ test("bản đồ chuẩn: số đèn, vị trí, xuất phát, đom đóm ban �
   for (const y of ys) assert.ok([0, 3, 6].includes(y as number));
 });
 
-test("snapshot v1.1 có đủ trường bắt buộc", () => {
+test("snapshot v1.2 có đủ trường bắt buộc", () => {
   const s = parse(runHeadless({ seed: 1, night: 2, ticks: 0 })).find((l) => l.type === "snapshot")!;
   for (const k of ["type", "tick", "sim_tick", "state", "night", "time_left_s", "score", "wind", "player", "lanterns", "shades", "drifters", "charms", "motes", "motes_active"]) {
     assert.ok(k in s, `thiếu ${k}`);
   }
-  for (const k of ["pos", "vel", "grounded", "invuln", "dash_cd_s", "pulse_cd_s", "charm_s", "flames", "carried"]) assert.ok(k in s.player, `thiếu player.${k}`);
+  for (const k of ["pos", "vel", "grounded", "invuln", "dash_cd_s", "pulse_cd_s", "charm_s", "flames", "carried", "capacity"]) assert.ok(k in s.player, `thiếu player.${k}`);
   assert.ok("kind" in s.motes[0] && "ttl_s" in s.motes[0] && "id" in s.motes[0] && "pos" in s.motes[0]);
+  for (const k of ["id", "pos", "lit", "deposited", "fuel", "ever_lit", "relit_count"]) assert.ok(k in s.lanterns[0], `thiếu lanterns.${k}`);
   assert.ok("available" in s.charms[0] && "respawn_s" in s.charms[0]);
   assert.ok("active" in s.wind && "dir_deg" in s.wind);
 });
@@ -110,17 +111,20 @@ test("hiệu năng: chạy 21.600 tick mỗi Đêm xong rất nhanh (yêu cầu 
 });
 
 // 5) Hợp đồng
-test("game.contract.json v1.1: số chuẩn và đủ khóa", () => {
-  assert.equal(contract.contract_version, "1.1");
+test("game.contract.json v1.2: số chuẩn và đủ khóa", () => {
+  assert.equal(contract.contract_version, "1.2");
   for (const k of ["team", "build_cmd", "run_cmd", "headless_cmd"] as const) assert.ok(contract[k]);
   const std: Record<string, unknown> = {
     player_speed: 6, carry_capacity: 10, lantern_cost: 10, lantern_count_night1: 5, pickup_radius: 1, interact_radius: 2,
-    pulse_cost: 3, pulse_radius: 5, night1_duration_s: 300, night2_duration_s: 330, night3_duration_s: 360, flames: 3,
+    pulse_cost: 3, pulse_radius: 5, night1_duration_s: 240, night2_duration_s: 270, night3_duration_s: 300, flames: 3,
+    fuel_max: 100, fuel_decay_per_s: 1.0, fuel_per_mote: 10, relight_cost: 5, win_ratio: 0.6, drain_per_s: 5, low_fuel_threshold: 30, capacity_max: 20,
     invuln_s: 1.5, hit_drop_ratio: 0.5, pulse_stun_s: 2, pulse_push_m: 4, pulse_cooldown_s: 3, safe_radius: 6,
     shade_speed: 4, shade_hit_radius: 1, dash_speed: 14, dash_duration_s: 0.2, dash_cooldown_s: 1.5, fall_enabled: true,
   };
   for (const [k, v] of Object.entries(std)) assert.equal((contract.tuning as any)[k], v, `tuning.${k}`);
-  assert.deepEqual(contract.tuning.score, { per_mote: 10, per_lantern: 100, per_stun: 5, per_second_left: 2, per_flame_left: 50 });
+  // điểm Ticket-03: +5/đom đóm, 100 thắp đầu, 40 thắp lại, +5 (+15 nếu drain) tỏa sáng, 50 mỗi đèn sáng lúc bình minh (+floor(fuel)), 50 mỗi Ngọn Lửa; bỏ thưởng thời gian
+  assert.deepEqual(contract.tuning.score, { per_mote: 5, per_lantern: 100, per_relight: 40, per_stun: 5, per_stun_drain: 15, per_lit_lantern_dawn: 50, per_flame_left: 50 });
+  assert.ok(!("per_second_left" in contract.tuning.score), "thưởng thời gian đã bỏ");
 });
 
 // 6) CLI: mã thoát và định dạng
@@ -157,6 +161,11 @@ test("CLI: inputs/scenario sai định dạng -> mã 2 và thông báo ở stder
     ["scenario", JSON.stringify({ drifters: [{ pos: [0, 0, 0], state: "sleeping" }] })],
     ["scenario", JSON.stringify({ wind_enabled: "yes" })],
     ["scenario", JSON.stringify({ charms: [{ id: "C9" }] })],
+    ["scenario", JSON.stringify({ lanterns: [{ id: "L1", fuel: 101 }] })],
+    ["scenario", JSON.stringify({ lanterns: [{ id: "L1", fuel: "nhieu" }] })],
+    ["scenario", JSON.stringify({ lanterns: [{ id: "L1", ever_lit: "co" }] })],
+    ["scenario", JSON.stringify({ shades: [{ pos: [0, 0, 0], target_lantern_id: 5 }] })],
+    ["scenario", JSON.stringify({ player: { successful_lights: -1 } })],
   ] as const;
   for (const [kind, content] of bad) {
     const f = join(dir, `${kind}.json`);

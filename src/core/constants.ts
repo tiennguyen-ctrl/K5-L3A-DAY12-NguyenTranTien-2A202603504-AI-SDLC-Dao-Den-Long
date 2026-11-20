@@ -38,6 +38,11 @@ export const WORLD = {
   shade_min_player_dist: 15,
   zone_margin: 0.01,
   zone_push_per_tick: 0.2004, // (6 + 0,01) / 30: từ tâm đèn ra mép trong tối đa 30 tick
+  // sức chứa tăng dần (Ticket-03)
+  capacity_per_light: 2,
+  // bóng hút dầu (Ticket-03)
+  drain_range: 2,
+  drain_event_every: 60,
   // tỏa sáng
   pulse_center_up: 0.8,
   // gió lạc

@@ -4,9 +4,11 @@ export interface Settings {
   volume: number;
   /** 0.2..3 (1 = mặc định) */
   sensitivity: number;
+  /** Bảng màu dễ phân biệt (chế độ mù màu), Ticket-03. */
+  colorblind: boolean;
 }
 
-export const DEFAULT_SETTINGS: Settings = { volume: 0.7, sensitivity: 1 };
+export const DEFAULT_SETTINGS: Settings = { volume: 0.7, sensitivity: 1, colorblind: false };
 export const SETTINGS_KEY = "dao-den-long.settings.v1";
 
 /** Giao diện tối thiểu của storage để test được mà không cần trình duyệt. */
@@ -25,6 +27,7 @@ export function sanitize(raw: unknown): Settings {
   return {
     volume: clamp(o.volume, 0, 1, DEFAULT_SETTINGS.volume),
     sensitivity: clamp(o.sensitivity, 0.2, 3, DEFAULT_SETTINGS.sensitivity),
+    colorblind: o.colorblind === true,
   };
 }
 

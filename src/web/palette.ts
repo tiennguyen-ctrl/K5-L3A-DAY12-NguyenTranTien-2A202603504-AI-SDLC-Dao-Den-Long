@@ -8,3 +8,7 @@ export const PALETTE = {
   mayRobe: 0xe8e2d0, mayScarf: 0xc8102e, charm: 0xc8102e,
   gold: 0xf2c14e, drifter: 0x8fa3b8, danger: 0xff5a5f, text: 0xf5f1e6,
 } as const;
+
+/** Bảng màu dễ phân biệt (Ticket-03, cài đặt được lưu): viền/mắt Bóng Mực #00B3FF, màu cảnh báo UI #FFFFFF (kèm biểu tượng ⚠). */
+export const ACCESSIBLE = { shadeRim: 0x00b3ff, danger: 0xffffff } as const;
+export const colorsFor = (colorblind: boolean) => (colorblind ? ACCESSIBLE : { shadeRim: PALETTE.shadeRim, danger: PALETTE.danger });

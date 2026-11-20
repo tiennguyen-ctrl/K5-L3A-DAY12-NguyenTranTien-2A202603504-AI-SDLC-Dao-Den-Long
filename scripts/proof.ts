@@ -1,4 +1,4 @@
-// Tạo bằng chứng thật: chạy từng kịch bản qua CLI headless, lưu scenario/inputs/output vào docs/proof/phase2/<kịch bản>/
+// Tạo bằng chứng thật: chạy từng kịch bản qua CLI headless, lưu scenario/inputs/output vào docs/proof/phase3/<kịch bản>/
 // và kiểm lại hành vi. Chạy: npm run proof
 // (docs/proof/phase1/ là bằng chứng đã đóng băng theo tag phase-1, script này KHÔNG đụng tới.)
 import { spawnSync } from "node:child_process";
@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { CASES, parse } from "../tests/cases.ts";
 
 const root = join(import.meta.dirname, "..");
-const outDir = join(root, "docs", "proof", "phase2");
+const outDir = join(root, "docs", "proof", "phase3");
 mkdirSync(outDir, { recursive: true });
 for (const c of CASES) rmSync(join(outDir, c.name), { recursive: true, force: true });
 
@@ -27,9 +27,9 @@ for (const c of CASES) {
     try { c.check(parse(readFileSync(join(d, "output.jsonl"), "utf8"))); } catch (e) { ok = false; note = (e as Error).message.split("\n")[0]; }
   } else note = `exit ${r.status}: ${r.stderr.trim()}`;
   if (!ok) failed++;
-  rows.push(`| ${c.name} | ${c.phase === 1 ? "hồi quy P1" : "mới P2"} | Đêm ${c.night ?? 1} | ${c.proves} | ${ok ? "ĐẠT" : "CHƯA ĐẠT " + note} |`);
+  rows.push(`| ${c.name} | ${c.phase === 1 ? "hồi quy P1" : c.phase === 2 ? "hồi quy P2" : "mới P3"} | Đêm ${c.night ?? 1} | ${c.proves} | ${ok ? "ĐẠT" : "CHƯA ĐẠT " + note} |`);
 }
 const table = ["| Kịch bản | Loại | Bản đồ | Chứng minh | Kết quả |", "|---|---|---|---|---|", ...rows].join("\n");
-writeFileSync(join(outDir, "RESULTS.md"), `# Kết quả kịch bản headless Phase 2\n\nSinh bởi \`npm run proof\` (chạy qua CLI headless thật). Mỗi thư mục con có \`scenario.json\`, \`inputs.json\`, \`output.jsonl\`.\n\n${table}\n`);
+writeFileSync(join(outDir, "RESULTS.md"), `# Kết quả kịch bản headless Phase 3\n\nSinh bởi \`npm run proof\` (chạy qua CLI headless thật). Mỗi thư mục con có \`scenario.json\`, \`inputs.json\`, \`output.jsonl\`.\n\n${table}\n`);
 console.log(table);
 if (failed) { console.error(`\n${failed} kịch bản chưa đạt`); process.exitCode = 1; }

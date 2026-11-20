@@ -1,0 +1,45 @@
+{
+  "random_motes": false,
+  "random_shades": false,
+  "random_drifters": false,
+  "wind_enabled": false,
+  "motes": [],
+  "shades": [
+    {
+      "id": "S1",
+      "pos": [
+        0,
+        0,
+        23.5
+      ],
+      "state": "drain",
+      "target_lantern_id": "L1"
+    },
+    {
+      "id": "S2",
+      "pos": [
+        1.5,
+        0,
+        26
+      ],
+      "state": "drain",
+      "target_lantern_id": "L1"
+    }
+  ],
+  "drifters": [],
+  "charms": [],
+  "player": {
+    "pos": [
+      0,
+      0,
+      18
+    ]
+  },
+  "lanterns": [
+    {
+      "id": "L1",
+      "lit": true,
+      "fuel": 20
+    }
+  ]
+}

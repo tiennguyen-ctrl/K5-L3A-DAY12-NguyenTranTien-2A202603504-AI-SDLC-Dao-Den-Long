@@ -62,3 +62,33 @@ Như Phase 1: "cache read" là ngữ cảnh bị đọc lại mỗi lượt, kh�
 **Harness:** `AGENTS.md` cập nhật cho phạm vi mới (kiến trúc maps/world/flow, quy tắc test không dùng `WORLD.*`); thêm skill `.claude/skills/verify-phase/SKILL.md` (typecheck, test, proof, tất định, hiệu năng, báo "CHƯA KIỂM CHỨNG" thay vì "đạt").
 
 **Đánh giá Phase 2:** lõi headless v1.1 đạt theo bằng chứng (89/89 test, 67/67 kịch bản CLI, 21.600 tick chạy 0,45–0,6 s, tất định). Lúc nộp tag chưa kiểm chứng: âm thanh, hình ảnh tầng/dốc/tháp Đêm 3, ván chơi tay Đêm 2–3. Sau đó chủ repo tự kiểm và báo: âm thanh ổn, đã xem hình ảnh Đêm 3, đã chơi tay Đêm 2 và 3 (lời khai, không có ghi âm/ảnh/video). FPS đã đo bằng F3 (82–103). Bot vẫn chỉ thắng Đêm 1, chưa thắng Đêm 2. Chi tiết: [phase2-acceptance.md](../proof/phase2-acceptance.md).
+
+## Phase 3 (Ticket-03 "Đèn cạn dầu", Contract v1.2)
+**Công cụ:** Claude Code (VS Code).
+
+**Token Phase 3** (cộng từ file lịch sử phiên, trừ phần Phase 1–2 đã ghi ở trên; ~122 lượt trả lời của AI, tính đến ngay trước khi commit Phase 3):
+| Loại | Số token |
+|---|---|
+| Output (AI viết ra) | ~186.000 |
+| Input mới | ~270 |
+| Ghi bộ nhớ đệm (cache write) | ~355.000 |
+| Đọc lại bộ nhớ đệm (cache read) | ~40,9 triệu |
+
+Như các phase trước: "cache read" là ngữ cảnh bị đọc lại mỗi lượt, không phải nội dung mới. Phase 3 có cả đoạn sửa tài liệu Phase 2 sau khi nộp, nên con số gồm việc đó. Phiên đã bị nén ngữ cảnh một lần giữa chừng (phải đọc lại toàn bộ thư mục để tiếp tục).
+
+**Quy trình đã làm**
+1. Đọc PDF Ticket-03, lập bảng "Phase 3 đổi gì" và 16 giả định (docs/notes/phase3-spec.md) TRƯỚC khi sửa lõi; viết ADR-001 và CHANGELOG.
+2. Sửa contract/types/validate, rồi lõi game.ts (nhiên liệu, drain, thắng ở bình minh, sức chứa, điểm). Chạy test cũ để xem chính xác test nào đỏ vì luật bị thay: 10 test đỏ, đều là test của luật bị [THAY THẾ] (đặt cọc vào đèn sáng, thắng sớm, thời lượng, contract, bản đồ), không có hồi quy bất ngờ ở các luật không bị đổi.
+3. Sửa test cũ kèm lý do (bảng ở spec mục 4), viết 39 kịch bản mới với số ghi cứng từ ticket.
+4. Kiểm thử đột biến 23 phép phá; làm bản web (thanh dầu, mù màu, HUD) sau lõi; bằng chứng bằng lệnh thật (npm run proof, đo hiệu năng/tất định, bot).
+
+**Chỗ AI sai / suýt sai, và cách phát hiện**
+- **Test của chính tôi sai khá nhiều lần đầu** (10 kịch bản mới đỏ ngay lần chạy đầu): đọc snapshot tick không tồn tại vì snapshotEvery mặc định 10; frame input ở tick 100 áp ở tick mô phỏng 101; dựng cảnh drain với đèn fuel 50 trong khi drain cần fuel < 30; bóng cách Mây < 6 m chuyển chase ngay nên không "drain" như dự định; kỳ vọng fuel 100 sau 5 tick trong khi đã hao. Tất cả là lỗi kỳ vọng/dựng cảnh chứ không phải lỗi luật; phân tích từng ca rồi sửa test, không sửa code cho khớp test.
+- **Kiểm thử đột biến lần đầu: 2/23 phép sống sót**: đèn yếu "<" thành "<=" và drain_range 2 thành 3 (thiếu test biên đúng 30 và đúng 2,0 m). Thêm wander_weak_boundary_30, drain_range_is_2m thì đều bị bắt. Phép thứ 23 "pause vẫn hao" là phép rỗng do tôi viết nhầm (thay chuỗi bằng chính nó), bị loại khỏi số liệu.
+- Phát hiện một hệ quả của thứ tự bước mà ticket không nói: vì dầu hao ở bước 2 trước bước tương tác, đèn sáng luôn < 100 khi tương tác, nên "đèn đầy dầu không được chọn" gần như không xảy ra; ghi vào ADR và phần hạn chế thay vì tự bịa kịch bản.
+- Lệnh shell có heredoc dài lại bị lỗi (không ghi được file) như ở Phase 1, và một script sửa nhiều chỗ dừng giữa chừng vì một cặp thay thế sai chuỗi; phải kiểm tra file nào đã bị ghi trước khi chạy lại. Dùng công cụ Write cho file lớn.
+- Script bot của Phase 2 ghi thẳng vào docs/proof/phase2/bot (sẽ ghi đè bằng chứng đã đóng băng theo tag): phát hiện khi đọc lại mã trước khi chạy, đổi sang phase3/.
+
+**Harness:** AGENTS.md cập nhật cho Ticket-03 (luật thay thế, proof/bot chỉ ghi phase3/, bằng chứng phase cũ đóng băng). Skill verify-phase giữ nguyên.
+
+**Đánh giá Phase 3:** lõi headless v1.2 đạt theo bằng chứng (131/132 test, 106/106 kịch bản CLI, 21.600 tick/Đêm chạy 0,39–0,56 s, tất định, 22 phép đột biến có ý nghĩa đều bị bắt). Chưa kiểm chứng: giao diện mới và chế độ mù màu bằng mắt thường, chơi tay Phase 3, cân bằng; bot chỉ thắng Đêm 1 1/6 ván, chưa thắng Đêm 2. Giả định có thể lệch test ẩn: deposited của đèn sáng, refuel.amount, wander đi tới đèn mục tiêu. Chi tiết: [phase3-acceptance.md](../proof/phase3-acceptance.md).

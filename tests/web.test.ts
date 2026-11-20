@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { beginNight, finishNight, initialFlow, newGame, nextAfterResult, retryNight, NIGHT_INFO } from "../src/web/flow.ts";
+import { startAt, beginNight, finishNight, initialFlow, newGame, nextAfterResult, retryNight, NIGHT_INFO } from "../src/web/flow.ts";
 import type { Flow } from "../src/web/flow.ts";
 import { DEFAULT_SETTINGS, SETTINGS_KEY, loadSettings, sanitize, saveSettings } from "../src/web/settings.ts";
 import type { KV } from "../src/web/settings.ts";
-import { PALETTE } from "../src/web/palette.ts";
+import { ACCESSIBLE, PALETTE, colorsFor } from "../src/web/palette.ts";
 
 // ---------- Cài đặt: lưu giữa các lần mở game ----------
 const memory = (): KV & { data: Map<string, string> } => {
@@ -15,13 +15,14 @@ const memory = (): KV & { data: Map<string, string> } => {
 test("cài đặt: mặc định khi chưa lưu; lưu rồi mở lại (storage mới trỏ cùng dữ liệu) vẫn giữ", () => {
   const st = memory();
   assert.deepEqual(loadSettings(st), DEFAULT_SETTINGS);
-  assert.equal(saveSettings({ volume: 0.25, sensitivity: 2.2 }, st), true);
+  assert.equal(saveSettings({ volume: 0.25, sensitivity: 2.2, colorblind: true }, st), true);
   assert.ok(st.data.has(SETTINGS_KEY));
-  assert.deepEqual(loadSettings(st), { volume: 0.25, sensitivity: 2.2 });
+  assert.deepEqual(loadSettings(st), { volume: 0.25, sensitivity: 2.2, colorblind: true });
 });
 
 test("cài đặt: giá trị hỏng/ngoài khoảng được làm sạch, không làm vỡ game", () => {
-  assert.deepEqual(sanitize({ volume: 9, sensitivity: -4 }), { volume: 1, sensitivity: 0.2 });
+  assert.deepEqual(sanitize({ volume: 9, sensitivity: -4 }), { volume: 1, sensitivity: 0.2, colorblind: false });
+  assert.equal(sanitize({ colorblind: "true" }).colorblind, false, "chỉ chấp nhận boolean true");
   assert.deepEqual(sanitize({ volume: "abc" }), DEFAULT_SETTINGS);
   assert.deepEqual(sanitize(null), DEFAULT_SETTINGS);
   const st = memory();
@@ -99,4 +100,41 @@ test("bảng màu chuẩn của Ticket-02 dùng đúng mã hex", () => {
     charm: "#C8102E", gold: "#F2C14E", drifter: "#8FA3B8", danger: "#FF5A5F", text: "#F5F1E6",
   };
   for (const [k, v] of Object.entries(expected)) assert.equal(hex((PALETTE as Record<string, number>)[k]), v, k);
+});
+
+// ---------- Chế độ mù màu (Ticket-03) ----------
+test("bảng màu dễ phân biệt: viền/mắt Bóng Mực #00B3FF, cảnh báo UI #FFFFFF; mặc định giữ #7A3CFF / #FF5A5F", () => {
+  const hex = (n: number) => "#" + n.toString(16).padStart(6, "0").toUpperCase();
+  assert.equal(hex(ACCESSIBLE.shadeRim), "#00B3FF");
+  assert.equal(hex(ACCESSIBLE.danger), "#FFFFFF");
+  assert.equal(hex(colorsFor(true).shadeRim), "#00B3FF");
+  assert.equal(hex(colorsFor(true).danger), "#FFFFFF");
+  assert.equal(hex(colorsFor(false).shadeRim), "#7A3CFF");
+  assert.equal(hex(colorsFor(false).danger), "#FF5A5F");
+});
+
+test("cài đặt mù màu: mặc định tắt, được lưu và đọc lại", () => {
+  assert.equal(DEFAULT_SETTINGS.colorblind, false);
+  const st = memory();
+  saveSettings({ ...DEFAULT_SETTINGS, colorblind: true }, st);
+  assert.equal(loadSettings(st).colorblind, true);
+  assert.equal(loadSettings(memory()).colorblind, false);
+});
+
+test("lời Ông Đăng nêu đúng số đèn cần giữ tới bình minh (3/5, 4/6, 5/7)", () => {
+  assert.match(NIGHT_INFO[1].lines.join(" "), /3 ngọn/);
+  assert.match(NIGHT_INFO[2].lines.join(" "), /4 trong 6/);
+  assert.match(NIGHT_INFO[3].lines.join(" "), /5 trong 7/);
+});
+
+test("chọn Đêm từ menu: vào thẳng giới thiệu Đêm đó, tổng điểm 0; thắng thì đi tiếp đúng thứ tự", () => {
+  for (const n of [1, 2, 3] as const) {
+    const f = startAt(n);
+    assert.deepEqual([f.screen, f.night, f.total], ["intro", n, 0]);
+  }
+  let f = finishNight(beginNight(startAt(2)), true, 300);
+  assert.deepEqual([f.screen, f.total], ["result", 300]);
+  f = nextAfterResult(f);
+  assert.deepEqual([f.screen, f.night], ["intro", 3]);
+  assert.equal(finishNight(beginNight(startAt(3)), true, 100).screen, "dawn");
 });

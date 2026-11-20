@@ -49,6 +49,11 @@
     label { display: block; margin: 14px 0 2px; text-align: left; }
     input[type=range] { width: 100%; accent-color: var(--lit); }
     .bad { color: var(--danger); }
+    /* Bảng màu dễ phân biệt (Ticket-03): màu cảnh báo #FFFFFF kèm biểu tượng ⚠ */
+    body.cb { --danger: #FFFFFF; }
+    body.cb #flash { background: radial-gradient(transparent 40%, rgba(255, 255, 255, .6)); }
+    body.cb #clock.low::before, body.cb .bad::before, body.cb .warn::before { content: "⚠ "; }
+    #lowfuel { top: 100px; left: 50%; transform: translateX(-50%); display: none; border-color: var(--danger); color: var(--danger); }
   </style>
 </head>
 <body>
@@ -62,6 +67,7 @@
     <div id="charm" class="chip" style="display:none"></div>
     <div id="hint" class="chip"></div>
     <div id="wind" class="chip"></div>
+    <div id="lowfuel" class="chip warn"></div>
     <div id="arrow"></div>
   </div>
   <div id="toast"></div>
